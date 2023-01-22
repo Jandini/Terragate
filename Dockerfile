@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 
 WORKDIR /app
+EXPOSE 80
 
 # Find all *.crt files, copy them to ca-certificates folder and run certificate update.
 COPY res/*.crt /usr/local/share/ca-certificates/
@@ -15,7 +16,7 @@ RUN wget https://releases.hashicorp.com/terraform/1.3.7/terraform_1.3.7_linux_am
     chmod +x /usr/bin/terraform && \
     rm terraform_1.3.7_linux_amd64.zip
 
-# Include test terraform file
-COPY res/*.tf /app/
+# Copy web application
+COPY src/Terragate.Api/bin/Release/net7.0/linux-x64/publish .
 
-ENTRYPOINT terraform init && terraform apply -auto-approve
+ENTRYPOINT ["dotnet", "Terragate.Api.dll"]
