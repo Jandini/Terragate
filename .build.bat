@@ -1,1 +1,3 @@
-@pwsh .build.ps1
+@echo off
+echo Starting script...
+pwsh .build.ps1
