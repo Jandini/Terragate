@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 
 # Find all *.crt files, copy them to ca-certificates folder and run certificate update.
-COPY *.crt /usr/local/share/ca-certificates/
+COPY res/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
 # Install prerequisites
