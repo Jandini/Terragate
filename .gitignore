@@ -348,3 +348,14 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Ignore local certificates and sample tf files
+*.tf
+*.crt
+*.cer
+
+# Ignore terraform files
+.terraform
+*terraform.log
+*.hcl
+
