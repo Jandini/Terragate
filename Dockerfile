@@ -16,6 +16,6 @@ RUN wget https://releases.hashicorp.com/terraform/1.3.7/terraform_1.3.7_linux_am
     rm terraform_1.3.7_linux_amd64.zip
 
 # Include test terraform file
-COPY test.tf /app/
+COPY res/*.tf /app/
 
 ENTRYPOINT terraform init && terraform apply -auto-approve
