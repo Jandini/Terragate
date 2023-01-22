@@ -13,11 +13,9 @@ Simple gateway API for terraform command line tool.
 
 
 
-# How to...
+# Development 
 
-All you need to know about Terragate development and troubleshooting. 
-
-
+All you need to know about Terragate development and troubleshooting. This is a summary of all challenges and lesson learned while developing Terragate.
 
 ## Execute command inside container
 
@@ -68,8 +66,6 @@ RUN wget https://releases.hashicorp.com/terraform/1.3.7/terraform_1.3.7_linux_am
 
 ENTRYPOINT ./terraform
 ```
-
-
 
 **The certificate of 'releases.hashicorp.com' is not trusted. ** may be thrown when certificates are not updated. Make sure there certificates are provided and certificate repository is updated. 
 
@@ -142,6 +138,35 @@ RUN update-ca-certificates
 The copy will find all the files (recursively) from root of your repository and copy them to desired output. 
 
 **IMPORTANT:**  The certificates must have CRT extension in `/usr/local/share/ca-certificates/`. Otherwise update-ca-certificates will not find them.
+
+
+
+## Reduce docker image size  
+
+Removing files `rm terraform_1.3.7_linux_amd64.zip` reduces image size. Each RUN creates a docker image layer. The break line character `&& \` allows to execute multiple commands and create one docker image layer.  This is example of terraform running in alpine Linux. 
+
+```dockerfile
+FROM alpine:3.14
+WORKDIR /app
+
+# Install prerequisites
+RUN apk add --no-cache wget unzip
+
+# Download and unpack terraform
+RUN wget https://releases.hashicorp.com/terraform/1.3.7/terraform_1.3.7_linux_amd64.zip && \
+    unzip terraform_1.3.7_linux_amd64.zip -d /usr/bin && \
+    rm terraform_1.3.7_linux_amd64.zip && \
+    chmod +x /usr/bin/terraform
+
+ENTRYPOINT terraform
+```
+
+This container has only 69.4MB because of `alpine:3.14` image and zip file was deleted. 
+
+
+```
+REPOSITORY           TAG                      IMAGE ID       CREATED          SIZE                                                     jandinis/terragate   0.1.0-terraform-file.1   f2507eb25f58   7 seconds ago    69.4MB   
+```
 
 
 
