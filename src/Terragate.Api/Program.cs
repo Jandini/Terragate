@@ -1,13 +1,10 @@
 using Serilog;
 using System.Reflection;
 
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", true)
-    .Build();
+var builder = WebApplication.CreateBuilder(args);
 
 var logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(configuration)    
+    .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
 
 var assembly = Assembly.GetExecutingAssembly();
@@ -16,7 +13,6 @@ var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>
 logger.ForContext<Program>()
     .Information($"Starting {assembly.GetName().Name} {{version}}", version);
 
-var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog(logger);
 
