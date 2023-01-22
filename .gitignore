@@ -350,9 +350,9 @@ MigrationBackup/
 .ionide/
 
 # Ignore local certificates and sample tf files
-res/*.tf
-res/*.crt
-res/*.cer
+**/*.tf
+**/*.crt
+**/*.cer
 
 # Ignore terraform files
 .terraform
