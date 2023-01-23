@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Terragate.Api.Controllers
 {
@@ -28,6 +29,27 @@ namespace Terragate.Api.Controllers
             
             _logger.LogInformation("{@result}", result);
             return result;
+        }
+
+
+        [HttpPost(Name = "UploadFiles")]
+        public async Task<IActionResult> Post(List<IFormFile> files)
+        {
+            long size = files.Sum(f => f.Length);            
+            var filePath = Path.GetTempFileName();
+
+            foreach (var formFile in files)
+            {
+                if (formFile.Length > 0)
+                {
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await formFile.CopyToAsync(stream);
+                    }
+                }
+            }         
+
+            return Ok(new { count = files.Count, size, filePath });
         }
     }
 }
