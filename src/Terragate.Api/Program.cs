@@ -7,15 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Create serilog logger.
 var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
-    .CreateLogger();
+    .CreateLogger()
+    .ForContext<Program>();
 
 // Get application version.
 var assembly = Assembly.GetExecutingAssembly();
 var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
 // Log application version.
-logger.ForContext<Program>()
-    .Information($"Starting {assembly.GetName().Name} {{version}}", version);
+logger.Information($"Starting {assembly.GetName().Name} {{version}}", version);
 
 // Use serilog for webhosting.
 builder.Host.UseSerilog(logger);
@@ -31,7 +31,9 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{
+{    
+    
+    logger.Warning($"Adding swagger http://[::]80/swagger/index.html");
     app.UseSwagger();
     app.UseSwaggerUI();
 }

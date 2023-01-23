@@ -15,9 +15,29 @@ Simple gateway API for terraform command line tool.
 
 # Development 
 
-All you need to know about Terragate development and troubleshooting. This is a summary of all challenges and lesson learned while developing Terragate.
+This is a summary of all challenges and lessons learned while developing this project.
 
-## Execute command inside container
+
+
+## Docker port mapping must come before image name
+
+The port mapping option `-p` MUST be provided before image name. 
+
+* Correct format. Port option has to come before image name.
+  ```sh
+  docker run -p 3000:80 my_image
+  ```
+
+* Wrong format. Docker will not notify you, and will silently fail port publishing.
+
+  ```sh
+  docker run my_image -p 3000:80
+  ```
+
+
+
+
+## How to execute command inside container
 
 Start sample container in `-d` detached mode with `--rm` flat to remove container once is stopped.
 
@@ -170,7 +190,7 @@ REPOSITORY           TAG                      IMAGE ID       CREATED          SI
 
 
 
-## How to export certificates
+## How to export certificates from local machine
 
 If terraform works on your machine, you can find and export required certificates. 
 
