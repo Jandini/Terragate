@@ -1,5 +1,6 @@
 using Serilog;
 using System.Reflection;
+using Terragate.Api.Services;
 
 // Create web application builder.
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Host.UseSerilog(logger);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddScoped<ITerraformProcessService, TerraformProcessService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
