@@ -32,24 +32,18 @@ namespace Terragate.Api.Controllers
         }
 
 
-        [HttpPost(Name = "UploadFiles")]
-        public async Task<IActionResult> Post(List<IFormFile> files)
+        [HttpPost(Name = "UploadFile")]
+        public async Task<IActionResult> Post(IFormFile file)
         {
-            long size = files.Sum(f => f.Length);            
-            var filePath = Path.GetTempFileName();
+            var path = Path.Combine(".vra", Guid.NewGuid().ToString());
+            Directory.CreateDirectory(path);
 
-            foreach (var formFile in files)
-            {
-                if (formFile.Length > 0)
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await formFile.CopyToAsync(stream);
-                    }
-                }
-            }         
+            path = Path.ChangeExtension(Path.Combine(path, Path.GetRandomFileName()), "tf");
 
-            return Ok(new { count = files.Count, size, filePath });
+            using (var stream = new FileStream(path, FileMode.Create))
+            await file.CopyToAsync(stream);
+
+            return Ok(new { file.Length, path });
         }
     }
 }
