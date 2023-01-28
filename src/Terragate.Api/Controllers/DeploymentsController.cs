@@ -10,18 +10,20 @@ namespace Terragate.Api.Controllers
     {
         private readonly ILogger<DeploymentsController> _logger;
         private readonly ITerraformProcessService _terraform;
+        private readonly ITerraformDeploymentRepository _repository;
 
-        public DeploymentsController(ILogger<DeploymentsController> logger, ITerraformProcessService terraform)
+        public DeploymentsController(ILogger<DeploymentsController> logger, ITerraformProcessService terraform, ITerraformDeploymentRepository repository)
         {
             _logger = logger;
             _terraform = terraform;
+            _repository = repository;
         }
 
         [HttpGet(Name = "GetDeployments")]
         public IEnumerable<DeploymentDto> Get()
         {
-            var deployments = new DirectoryInfo(".vra")
-                .GetDirectories().Select(d => new DeploymentDto() { Name = d.Name, Date = DateOnly.FromDateTime(d.CreationTime) })
+            var deployments = _repository.GetDeployments()
+                .Select(d => new DeploymentDto() { Guid = d.Guid, CreatedDate = d.CreatedDate })
                 .ToArray();
             
             _logger.LogInformation("{@deployments}", deployments);
@@ -32,17 +34,16 @@ namespace Terragate.Api.Controllers
         [HttpPost(Name = "CreateDeployment")]
         public async Task<IActionResult> Post(IFormFile file)
         {
-            var deploymentDir = Path.Combine(".vra", Guid.NewGuid().ToString());
-            Directory.CreateDirectory(deploymentDir);
+            var deployment = await _repository.AddDeployment(file);
+            
+            await _terraform.StartAsync(
+                TerraformProcessCommand.Init, 
+                new TerraformProcessOptions() { 
+                    Arguments = "-no-color", 
+                    WorkingDirectory = deployment.WorkingDirectory 
+                });
 
-            var filePath = Path.ChangeExtension(Path.Combine(deploymentDir, Path.GetRandomFileName()), "tf");
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            await file.CopyToAsync(stream);
-
-            await _terraform.StartAsync(TerraformProcessCommand.Init, new TerraformProcessOptions() { Arguments = "-no-color", WorkingDirectory = deploymentDir });
-
-            return Ok(new { file.Length, filePath });
+            return Ok(new DeploymentDto() { Guid = deployment.Guid, CreatedDate = deployment.CreatedDate });
         }
     }
 }

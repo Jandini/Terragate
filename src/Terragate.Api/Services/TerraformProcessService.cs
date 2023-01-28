@@ -34,7 +34,7 @@ namespace Terragate.Api.Services
             }
 
             var name = "terraform";
-            var workingDir = options?.WorkingDirectory ?? Directory.GetCurrentDirectory();
+            var workingDir = options?.WorkingDirectory ?? new DirectoryInfo(Directory.GetCurrentDirectory());
 
             _logger.LogDebug("Starting {terraform} {args} in {dir}", name, args, workingDir);
             
@@ -45,7 +45,7 @@ namespace Terragate.Api.Services
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.WorkingDirectory = workingDir;
+            process.StartInfo.WorkingDirectory = workingDir.FullName;
             
             process.OutputDataReceived += (sender, args) =>
             {

@@ -24,6 +24,7 @@ builder.Host.UseSerilog(logger);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITerraformProcessService, TerraformProcessService>();
+builder.Services.AddScoped<ITerraformDeploymentRepository, TerraformDeploymentRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

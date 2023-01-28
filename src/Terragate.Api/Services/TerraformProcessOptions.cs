@@ -20,6 +20,6 @@
 
         public string? Arguments { get; set; } 
         public Dictionary<string, object>? Variables { get; set; } 
-        public string? WorkingDirectory { get; set; }
+        public DirectoryInfo? WorkingDirectory { get; set; }
     }
 }
