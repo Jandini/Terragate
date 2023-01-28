@@ -23,12 +23,17 @@ builder.Host.UseSerilog(logger);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Add terraform services
 builder.Services.AddScoped<ITerraformProcessService, TerraformProcessService>();
 builder.Services.AddScoped<ITerraformDeploymentRepository, TerraformDeploymentRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add AutoMapper service
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 

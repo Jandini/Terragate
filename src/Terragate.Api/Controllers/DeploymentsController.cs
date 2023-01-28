@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Terragate.Api.Models;
 using Terragate.Api.Services;
@@ -11,23 +12,26 @@ namespace Terragate.Api.Controllers
         private readonly ILogger<DeploymentsController> _logger;
         private readonly ITerraformProcessService _terraform;
         private readonly ITerraformDeploymentRepository _repository;
+        private readonly IMapper _mapper;
 
-        public DeploymentsController(ILogger<DeploymentsController> logger, ITerraformProcessService terraform, ITerraformDeploymentRepository repository)
+
+        public DeploymentsController(ILogger<DeploymentsController> logger, ITerraformProcessService terraform, ITerraformDeploymentRepository repository, IMapper mapper)
         {
             _logger = logger;
             _terraform = terraform;
             _repository = repository;
+            _mapper = mapper;
         }
 
         [HttpGet(Name = "GetDeployments")]
-        public IEnumerable<DeploymentDto> Get()
+        public ActionResult<IEnumerable<DeploymentDto>> Get()
         {
-            var deployments = _repository.GetDeployments()
-                .Select(d => new DeploymentDto() { Guid = d.Guid, CreatedDate = d.CreatedDate })
-                .ToArray();
-            
-            _logger.LogInformation("{@deployments}", deployments);
-            return deployments;
+            var deployments = _repository.GetDeployments();
+            var results = _mapper.Map<IEnumerable<DeploymentDto>>(deployments);
+
+            _logger.LogDebug("{@deployments}", results);
+
+            return Ok(results);
         }
 
 
@@ -43,7 +47,7 @@ namespace Terragate.Api.Controllers
                     WorkingDirectory = deployment.WorkingDirectory 
                 });
 
-            return Ok(new DeploymentDto() { Guid = deployment.Guid, CreatedDate = deployment.CreatedDate });
+            return Ok(_mapper.Map<DeploymentDto>(deployment));
         }
     }
 }

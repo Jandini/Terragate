@@ -21,7 +21,7 @@
         public IEnumerable<ITerraformDeployment> GetDeployments()
         {
             var deployments = _root.GetDirectories("????????-????-????-????-????????????")
-               .Select(d => new TerraformDeployment() { Guid = Guid.Parse(d.Name), CreatedDate = d.CreationTime })
+               .Select(d => new TerraformDeployment() { Guid = Guid.Parse(d.Name), CreatedDate = d.CreationTime, WorkingDirectory = d })
                .ToArray();
 
             return deployments;
