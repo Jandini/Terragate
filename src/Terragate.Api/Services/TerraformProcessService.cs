@@ -5,15 +5,14 @@ namespace Terragate.Api.Services
 {
     public class TerraformProcessService : ITerraformProcessService
     {
-
         private readonly ILogger<TerraformProcessService> _logger;
-        private readonly List<string> _output;        
-
+        private readonly List<string> _output;
+        
 
         public TerraformProcessService(ILogger<TerraformProcessService> logger)
         {
             _logger = logger;
-            _output = new List<string>(); 
+            _output = new List<string>();
         }
 
 
@@ -69,8 +68,10 @@ namespace Terragate.Api.Services
             if (process.Start())
             {
                 process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
                 await process.WaitForExitAsync();                
                 process.CancelOutputRead();
+                process.CancelErrorRead();
 
                 _logger.LogDebug("Terraform process exited with {ExitCode}", process.ExitCode);
 
@@ -87,6 +88,18 @@ namespace Terragate.Api.Services
         {
             _logger.LogDebug("Setting TF_LOG environment varialbe to {level}", level);
             Environment.SetEnvironmentVariable("TF_LOG", level.ToString());
+        }
+
+        public void SetPluginCacheDirectory(DirectoryInfo dir)
+        {            
+            if (!dir.Exists)
+            {
+                _logger.LogDebug("Creating {dir}", dir.FullName);
+                dir.Create();
+            }
+
+            _logger.LogDebug("Setting TF_PLUGIN_CACHE_DIR environment varialbe to {dir}", dir.FullName);
+            Environment.SetEnvironmentVariable("TF_PLUGIN_CACHE_DIR", dir.FullName);
         }
     }
 }
