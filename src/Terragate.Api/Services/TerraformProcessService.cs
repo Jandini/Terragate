@@ -6,8 +6,8 @@ namespace Terragate.Api.Services
     public class TerraformProcessService : ITerraformProcessService
     {
 
-        private ILogger<TerraformProcessService> _logger { get; }
-        private List<string> _output;        
+        private readonly ILogger<TerraformProcessService> _logger;
+        private readonly List<string> _output;        
 
 
         public TerraformProcessService(ILogger<TerraformProcessService> logger)
@@ -30,7 +30,7 @@ namespace Terragate.Api.Services
             if (options?.Variables != null)
             {
                 args.Append(' ');
-                args.Append(string.Join(" ", options.Variables.Select(a => "-var " + a.Key + "=" + a.Value)));
+                args.Append(string.Join(" ", options.Variables.Select(a => "-var " + a.Key + "=" + a.Value ?? string.Empty)));
             }
 
             var name = "terraform";
