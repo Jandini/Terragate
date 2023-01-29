@@ -3,7 +3,7 @@
     public class TerraformDeploymentRepository : ITerraformDeploymentRepository
     {
 
-        private ILogger<TerraformDeploymentRepository> _logger { get; }
+        private readonly ILogger<TerraformDeploymentRepository> _logger;
         private readonly DirectoryInfo _root;
 
         public TerraformDeploymentRepository(ILogger<TerraformDeploymentRepository> logger)
