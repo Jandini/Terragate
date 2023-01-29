@@ -1,4 +1,5 @@
 using Serilog;
+using Serilog.Events;
 using System.Reflection;
 using Terragate.Api.Services;
 
@@ -44,6 +45,14 @@ if (app.Environment.IsDevelopment())
     logger.Warning($"Adding swagger http://[::]80/swagger/index.html");
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Show environment variables 
+    if (logger.IsEnabled(LogEventLevel.Debug))
+    {
+        var variables = Environment.GetEnvironmentVariables();
+        foreach (var key in variables.Keys.Cast<string>().Order())
+            logger.ForContext(typeof(Environment)).Debug("{key:l}={value:l}", key, variables[key]);
+    }
 }
 
 app.UseHttpsRedirection();
