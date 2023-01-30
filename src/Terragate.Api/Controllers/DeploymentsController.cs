@@ -10,19 +10,16 @@ namespace Terragate.Api.Controllers
     public class DeploymentsController : ControllerBase
     {
         private readonly ILogger<DeploymentsController> _logger;
+        private readonly IMapper _mapper;
         private readonly ITerraformProcessService _terraform;
         private readonly ITerraformDeploymentRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IConfiguration _config;
 
-
-        public DeploymentsController(ILogger<DeploymentsController> logger, ITerraformProcessService terraform, ITerraformDeploymentRepository repository, IMapper mapper, IConfiguration config)
+        public DeploymentsController(ILogger<DeploymentsController> logger, IMapper mapper, ITerraformProcessService terraform, ITerraformDeploymentRepository repository)
         {
             _logger = logger;
+            _mapper = mapper;
             _terraform = terraform;
             _repository = repository;
-            _mapper = mapper;
-            _config = config;          
         }
 
         [HttpGet(Name = "GetDeployments")]
@@ -31,7 +28,8 @@ namespace Terragate.Api.Controllers
             var deployments = _repository.GetDeployments();
             var results = _mapper.Map<IEnumerable<DeploymentDto>>(deployments);
 
-            _logger.LogDebug("{@deployments}", results);
+            if (results.Any())
+                _logger.LogDebug("{@deployments}", results);
 
             return Ok(results);
         }
@@ -42,28 +40,8 @@ namespace Terragate.Api.Controllers
         {
             var deployment = await _repository.AddDeployment(file);
 
-
-            var options = new TerraformProcessOptions()
-            {
-                Arguments = "-no-color",
-                WorkingDirectory = deployment.WorkingDirectory
-            };
-            
-            await _terraform.StartAsync(TerraformProcessCommand.Init, options);
-
-            options.Variables = new Dictionary<string, object?>()
-            {
-                {  "VRA_COUNT", 1 },
-                {  "VRA_USER", _config["Vra:User"] },
-                {  "VRA_PASS", _config["Vra:Pass"] }
-            };
-
-            options.Arguments = "-no-color -auto-approve";
-
-            _terraform.SetPluginCacheDirectory(new DirectoryInfo(".plugins"));
-
-            await _terraform.StartAsync(TerraformProcessCommand.Apply, options);
-
+            await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);            
+            await _terraform.StartAsync("apply -no-color -auto-approve -input=false", deployment.WorkingDirectory);
 
             return Ok(_mapper.Map<DeploymentDto>(deployment));
         }

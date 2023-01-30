@@ -6,10 +6,10 @@
         private readonly ILogger<TerraformDeploymentRepository> _logger;
         private readonly DirectoryInfo _root;
 
-        public TerraformDeploymentRepository(ILogger<TerraformDeploymentRepository> logger)
+        public TerraformDeploymentRepository(ILogger<TerraformDeploymentRepository> logger, TerraformConfiguration configuration)
         {
             _logger = logger;
-            _root = new DirectoryInfo(".vra");
+            _root = new DirectoryInfo(configuration.Directories?.Deployments ?? ".deployments");
 
             if (!_root.Exists)
             {

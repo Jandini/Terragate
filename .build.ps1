@@ -11,7 +11,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Build docker container
 Write-Host "Building docker image $global:currentTag..."
-docker build -t $global:latestTag -t $global:currentTag .
+docker build -t $global:currentTag .
 if ($LASTEXITCODE -eq 1) {
     # Check if docker services are running
     .docker.ps1

@@ -2,8 +2,6 @@
 {
     public interface ITerraformProcessService
     {
-        void SetLogLevel(TerraformProcessLogLevel level);
-        void SetPluginCacheDirectory(DirectoryInfo dir);
-        Task StartAsync(TerraformProcessCommand command, TerraformProcessOptions? options = null);
+        Task StartAsync(string arguments, DirectoryInfo? workingDirectory);
     }
 }

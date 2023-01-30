@@ -1,66 +1,51 @@
 ﻿using System.Diagnostics;
-using System.Text;
 
 namespace Terragate.Api.Services
 {
     public class TerraformProcessService : ITerraformProcessService
     {
         private readonly ILogger<TerraformProcessService> _logger;
-        private readonly List<string> _output;
-        
+        private readonly TerraformConfiguration _config;
 
-        public TerraformProcessService(ILogger<TerraformProcessService> logger)
+        public TerraformProcessService(ILogger<TerraformProcessService> logger, TerraformConfiguration config)
         {
             _logger = logger;
-            _output = new List<string>();
+            _config = config;
         }
 
 
-        public async Task StartAsync(TerraformProcessCommand command, TerraformProcessOptions? options)
+        public async Task StartAsync(string arguments, DirectoryInfo? workingDirectory)
         {
-            var args = new StringBuilder(command.ToString().ToLower());
-
-            if (!string.IsNullOrEmpty(options?.Arguments))
-            {
-                args.Append(' ');
-                args.Append(options.Arguments);
-            }
-
-            if (options?.Variables != null)
-            {
-                args.Append(' ');
-                args.Append(string.Join(" ", options.Variables.Select(a => "-var " + a.Key + "=" + a.Value ?? string.Empty)));
-            }
-
             var name = "terraform";
-            var workingDir = options?.WorkingDirectory ?? new DirectoryInfo(Directory.GetCurrentDirectory());
 
-            _logger.LogDebug("Starting {terraform} {args} in {dir}", name, args, workingDir);
+            _logger.LogDebug("Starting {terraform} {args} in {dir}", name, arguments, workingDirectory);
             
             using var process = new Process();
 
             process.StartInfo.FileName = name;
-            process.StartInfo.Arguments = args.ToString();
+            process.StartInfo.Arguments = arguments;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.WorkingDirectory = workingDir.FullName;
+            process.StartInfo.WorkingDirectory = workingDirectory?.FullName;
             
             process.OutputDataReceived += (sender, args) =>
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
-                    _output.Add(args.Data);
                     _logger.LogDebug(args.Data);
                 }
             };
+
+            var level = string.IsNullOrEmpty(_config.LogLevel)
+                ? LogLevel.Error
+                : LogLevel.Debug;
 
             process.ErrorDataReceived += (sender, args) =>
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
-                    _output.Add(args.Data);
-                    _logger.LogError(args.Data);
+                    _logger.Log(level, args.Data);
                 }
             };
             
@@ -73,33 +58,15 @@ namespace Terragate.Api.Services
                 process.CancelOutputRead();
                 process.CancelErrorRead();
 
-                _logger.LogDebug("Terraform process exited with {ExitCode}", process.ExitCode);
+                _logger.LogDebug("Terraform process finished with exit code {ExitCode}", process.ExitCode);
 
                 if (process.ExitCode != 0)
-                    throw new Exception($"Terraform {command.ToString().ToLower()} failed.");
+                    throw new Exception($"Terraform {arguments} failed with exit code {process.ExitCode}.");
             }
             else
             {
                 throw new Exception("Terraform process failed to start.");
             }                            
-        }
-
-        public void SetLogLevel(TerraformProcessLogLevel level)
-        {
-            _logger.LogDebug("Setting TF_LOG environment varialbe to {level}", level);
-            Environment.SetEnvironmentVariable("TF_LOG", level.ToString());
-        }
-
-        public void SetPluginCacheDirectory(DirectoryInfo dir)
-        {            
-            if (!dir.Exists)
-            {
-                _logger.LogDebug("Creating {dir}", dir.FullName);
-                dir.Create();
-            }
-
-            _logger.LogDebug("Setting TF_PLUGIN_CACHE_DIR environment varialbe to {dir}", dir.FullName);
-            Environment.SetEnvironmentVariable("TF_PLUGIN_CACHE_DIR", dir.FullName);
-        }
+        }     
     }
 }
