@@ -12,7 +12,12 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    steps:
+
+    steps:    
     - uses: actions/checkout@v3
+    - name: Get GitVersion
+      run: |  
+        dotnet tool install --global GitVersion.Tool
+        dotnet gitversion /output buildserver 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag janinis/terragate:$(date +%s)
