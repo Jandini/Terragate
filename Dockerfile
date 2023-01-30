@@ -4,7 +4,7 @@ EXPOSE 80
 EXPOSE 443
 
 # Find all *.crt files, copy them to ca-certificates folder and run certificate update.
-COPY res/*.crt "/usr/local/share/ca-certificates/" /target
+COPY res/*.crt "/usr/local/share/ca-certificates/"
 RUN update-ca-certificates
 
 # Install prerequisites
