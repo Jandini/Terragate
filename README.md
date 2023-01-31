@@ -1,5 +1,5 @@
 # Terragate
-[![Docker](https://github.com/Jandini/Terragate/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Jandini/Terragate/actions/workflows/docker-image.yml)
+[![Docker Image CI](https://github.com/Jandini/Terragate/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Jandini/Terragate/actions/workflows/docker-image.yml)
 
 Simple gateway API for terraform command line tool.
 
