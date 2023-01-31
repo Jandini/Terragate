@@ -1,6 +1,10 @@
-.version.ps1
+& .version.ps1
 Write-Host "Opening http://localhost:8088/swagger/index.html"
 Start-Process "chrome.exe" "http://localhost:8088/swagger/index.html" -ErrorAction SilentlyContinue
-Write-Host "Executing docker run -p 8088:80 -it --rm $global:latestTag"
-docker run -p 8088:80 -it --rm $global:latestTag
+
+$dockerRun = { docker run -p 8088:80 -it -e TF_VAR_VRA_USER=$env:TF_VAR_VRA_USER -e TF_VAR_VRA_PASS=$env:TF_VAR_VRA_PASS --rm $global:currentTag }
+
+Write-Host "Running$dockerRun"
+& $dockerRun
+
 
