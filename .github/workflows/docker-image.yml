@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v3
       with: 
         fetch-depth: 0
-    - name: Get GitVersion
+    - name: Run GitVersion
       run: |  
         dotnet tool install --global GitVersion.Tool
         dotnet gitversion /output buildserver 
