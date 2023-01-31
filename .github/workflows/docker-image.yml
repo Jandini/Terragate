@@ -25,8 +25,6 @@ jobs:
         dotnet gitversion /output buildserver 
     - name: Publish
       working-directory: src
-      run: |  
-        dotnet restore
-        dotnet publish --no-restore -nologo --configuration Release --runtime linux-x64 --no-self-contained
+      run: dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag janinis/terragate:$(date +%s)
