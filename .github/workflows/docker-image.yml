@@ -21,5 +21,9 @@ jobs:
       run: |  
         dotnet tool install --global GitVersion.Tool
         dotnet gitversion /output buildserver 
+    - name: Publish
+      run: |  
+        dotnet restore
+        dotnet publish --no-restore -nologo --configuration Release --runtime linux-x64 --no-self-contained src\Terragate.sln 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag janinis/terragate:$(date +%s)
