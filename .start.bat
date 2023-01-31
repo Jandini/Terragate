@@ -1,3 +1,3 @@
 @echo off
 echo Preparing for container start...
-pwsh .start.ps1
+powershell .start.ps1

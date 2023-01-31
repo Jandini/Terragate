@@ -1,11 +1,26 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 
+# Set this argument to 1 or 0 to include or not include ca certificates from res 
+ARG ADD_CA_CERTS=0
+
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-# Find all *.crt files, copy them to ca-certificates folder and run certificate update.
-COPY res/*.crt /usr/local/share/ca-certificates/
-RUN update-ca-certificates
+
+# Copy certificates only if ADD_CA_CERTS argument is set to 1
+FROM base as ca-certs-1
+ONBUILD COPY res/*.crt /usr/local/share/ca-certificates/
+ONBUILD RUN update-ca-certificates
+
+# if ADD_CA_CERTS is empty or is set to 0 then only echo the message.
+FROM base as ca-certs-
+FROM base as ca-certs-0
+ONBUILD RUN echo "Build without ca certificates"
+
+# Trigger COPY and RUN defined in "ca-cert-1" when ADD_CA_CERTS variable is set to 1.
+FROM ca-certs-${ADD_CA_CERTS}
+
+
 
 # Install prerequisites
 RUN apt-get update && \
