@@ -9,10 +9,6 @@ Simple gateway API for terraform command line tool.
 
 
 
-
-
-
-
 # Development 
 
 This is a summary of all challenges and lessons learned while developing this project.
@@ -201,3 +197,50 @@ If terraform works on your machine, you can find and export required certificate
 5. Select `Base-64 encoded X.509 (.CER)` format. 
 6. Save the file. Be aware that the extension will be changed to *.cer. The docker image is expecting *.crt. 
 
+
+
+
+
+
+## Docker build fails "COPY failed: no source files were specified"
+
+When running docker COPY and files are not present it will fail. 
+
+```
+COPY res/*.crt "/usr/local/share/ca-certificates/"
+```
+
+will result with 
+
+```
+Step 5/11 : COPY res/*.crt "/usr/local/share/ca-certificates/"
+COPY failed: no source files were specified
+Error: Process completed with exit code 1.
+```
+
+Using `/target` parameter does not help here. 
+
+Based on https://stackoverflow.com/a/54245466 I created conditional COPY in docker file based on given `ADD_CA_CERTS` argument: 
+
+```dockerfile
+# Set this argument to 1 or 0 to include or not include ca certificates from res 
+ARG ADD_CA_CERTS=0
+...
+
+# Copy certificates only if ADD_CA_CERTS argument is set to 1
+FROM base as ca-certs-1
+ONBUILD COPY res/*.crt /usr/local/share/ca-certificates/
+ONBUILD RUN update-ca-certificates
+
+# if ADD_CA_CERTS is empty or is set to 0 then only echo the message.
+FROM base as ca-certs-
+FROM base as ca-certs-0
+ONBUILD RUN echo "Build without ca certificates"
+
+# Trigger COPY and RUN defined in "ca-cert-1" when ADD_CA_CERTS variable is set to 1.
+FROM ca-certs-${ADD_CA_CERTS}
+
+...
+```
+
+After this I learnt about [Docker COPY vs Docker ADD? | Jhooq](https://jhooq.com/docker-copy-vs-docker-add/)
