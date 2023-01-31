@@ -6,21 +6,8 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-
-# Copy certificates only if ADD_CA_CERTS argument is set to 1
-FROM base as ca-certs-1
-ONBUILD COPY res/*.crt /usr/local/share/ca-certificates/
-ONBUILD RUN update-ca-certificates
-
-# if ADD_CA_CERTS is empty or is set to 0 then only echo the message.
-FROM base as ca-certs-
-FROM base as ca-certs-0
-ONBUILD RUN echo "Build without ca certificates"
-
-# Trigger COPY and RUN defined in "ca-cert-1" when ADD_CA_CERTS variable is set to 1.
-FROM ca-certs-${ADD_CA_CERTS}
-
-
+ADD res/*.crt /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 # Install prerequisites
 RUN apt-get update && \
