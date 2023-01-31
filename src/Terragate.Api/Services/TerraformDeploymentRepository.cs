@@ -5,7 +5,7 @@
 
         private readonly ILogger<TerraformDeploymentRepository> _logger;
         private readonly DirectoryInfo _root;
-
+        
         public TerraformDeploymentRepository(ILogger<TerraformDeploymentRepository> logger, TerraformConfiguration configuration)
         {
             _logger = logger;
@@ -27,7 +27,7 @@
             return deployments;
         }
 
-        public async Task<ITerraformDeployment> AddDeployment(IFormFile file)
+        public async Task<ITerraformDeployment> AddDeployment(IFormFile[] terraformFiles)
         {
             var guid = Guid.NewGuid();
             
@@ -37,10 +37,15 @@
                 WorkingDirectory = _root.CreateSubdirectory(guid.ToString()),
                 CreatedDate = DateTime.UtcNow,
             };
-            
-            var path = Path.ChangeExtension(Path.Combine(deployment.WorkingDirectory.FullName, Path.GetRandomFileName()), "tf");
-            using var stream = new FileStream(path, FileMode.Create);
-            await file.CopyToAsync(stream);
+
+            foreach (var file in terraformFiles)
+            {
+                var path = Path.Combine(deployment.WorkingDirectory.FullName, file.FileName);
+                
+                _logger.LogDebug("Creating file {path}", Path.Combine(_root.Name, file.FileName));
+                using var stream = new FileStream(path, FileMode.Create);
+                await file.CopyToAsync(stream);
+            }
 
             return deployment; 
 

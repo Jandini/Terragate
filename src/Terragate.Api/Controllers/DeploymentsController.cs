@@ -36,9 +36,9 @@ namespace Terragate.Api.Controllers
 
 
         [HttpPost(Name = "CreateDeployment")]
-        public async Task<IActionResult> Post(IFormFile file)
+        public async Task<IActionResult> Post(IFormFile[] files)
         {
-            var deployment = await _repository.AddDeployment(file);
+            var deployment = await _repository.AddDeployment(files);
 
             await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);            
             await _terraform.StartAsync("apply -no-color -auto-approve -input=false", deployment.WorkingDirectory);

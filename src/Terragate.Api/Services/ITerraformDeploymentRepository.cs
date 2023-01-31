@@ -4,6 +4,6 @@
     {
         IEnumerable<ITerraformDeployment> GetDeployments();
 
-        Task<ITerraformDeployment> AddDeployment(IFormFile file);
+        Task<ITerraformDeployment> AddDeployment(IFormFile[] terraformFiles);
     }
 }
