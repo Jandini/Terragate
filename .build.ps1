@@ -1,22 +1,18 @@
+# NOTE: This scipt does not guarantee to include latest build. 
+#       Use publish to run dotnet publish and docker build.
+
 # Get version and docker tag
 .version.ps1
 
-# Publish terragate api
-Write-Host "Publishing terragate..."
-dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained src\Terragate.sln
-if ($LASTEXITCODE -ne 0) {
-    # Stop the script if dotnet publish fails
-    return
+# Run publish if publish folder does not exist. 
+if (!(Test-Path ".\src\Terragate.Api\bin\Release\net7.0\linux-x64\publish")) {
+    .publish.ps1
 }
 
 # Build docker container
 Write-Host "Building docker image $global:currentTag..."
-docker build -t $global:currentTag .
+docker build -t $global:currentTag .  --build-arg ADD_CA_CERTS=${env:ADD_CA_CERTS}
 if ($LASTEXITCODE -eq 1) {
     # Check if docker services are running
     .docker.ps1
 }
-
-    # Run the latest version of the container
-    .start.ps1
-    $global:gitVersion = $null
