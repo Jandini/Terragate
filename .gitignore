@@ -358,5 +358,6 @@ MigrationBackup/
 .terraform
 *terraform.log
 *.hcl
-.vra
+
 .plugins
+.vra

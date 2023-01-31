@@ -1,5 +1,8 @@
 # Terragate
+[![Docker Image CI](https://github.com/Jandini/Terragate/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Jandini/Terragate/actions/workflows/docker-image.yml)
+
 Simple gateway API for terraform command line tool.
+
 
 
 
@@ -244,3 +247,55 @@ FROM ca-certs-${ADD_CA_CERTS}
 ```
 
 After this I learnt about [Docker COPY vs Docker ADD? | Jhooq](https://jhooq.com/docker-copy-vs-docker-add/)
+
+
+
+## GitVersion fails in GitHub Actions
+
+Running `dotnet gitversion` fails with `System.NullReferenceException: Object reference not set to an instance of an object.` when running it in GitHub Actions.
+
+```yaml
+- name: Run GitVersion
+  run: |  
+    dotnet tool install --global GitVersion.Tool
+    dotnet gitversion /output buildserver 
+```
+
+Use `fetch-depth: 0` in `actions/checkout@v3`
+
+```yaml
+- uses: actions/checkout@v3
+  with: 
+    fetch-depth: 0
+```
+
+
+
+
+
+## Publish fails with `project.assets.json` doesn't have a target for 'net7.0/linux-x64'. 
+
+
+
+Running `dotnet restore` and `dotnet publish` separately: 
+
+```yaml
+ run: |  
+   dotnet restore
+   dotnet publish --no-restore -nologo --configuration Release --runtime linux-x64 --no-self-contained
+```
+
+throws following error:
+
+```
+... project.assets.json` doesn't have a target for 'net7.0/linux-x64'. Ensure that restore has run and that you have included 'net7.0' in the TargetFrameworks for your project. You may also need to include 'linux-x64' in your project's RuntimeIdentifiers.
+```
+
+
+
+No solution yet, but quick workaround is to run publish in one statement.
+
+```
+dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained
+```
+

@@ -1,0 +1,30 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    steps:    
+    - uses: actions/checkout@v3
+      with: 
+        fetch-depth: 0
+    - name: Setup
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x               
+    - name: Run GitVersion
+      run: |  
+        dotnet tool install --global GitVersion.Tool
+        dotnet gitversion /output buildserver 
+    - name: Publish
+      working-directory: src
+      run: dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag janinis/terragate:$(date +%s)
