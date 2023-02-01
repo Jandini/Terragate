@@ -27,4 +27,4 @@ jobs:
       working-directory: src
       run: dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag janinis/terragate:$(date +%s)
+      run: docker build . --file Dockerfile.production --tag janinis/terragate:$(date +%s)
