@@ -6,10 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1   
+
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
     steps:    
     - uses: actions/checkout@v3
@@ -18,13 +19,18 @@ jobs:
     - name: Setup
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.x               
+        dotnet-version: 7.0.x
     - name: Run GitVersion
       run: |  
         dotnet tool install --global GitVersion.Tool
         dotnet gitversion /output buildserver 
     - name: Publish
       working-directory: src
-      run: dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained
+      run: dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained -p:OutputType=Exe -p:DebugOutput=None
     - name: Build the Docker image
-      run: docker build . --file Dockerfile.production --tag janinis/terragate:$(date +%s)
+      run: docker build . --file Dockerfile.production --tag janinis/terragate:${{ env.GitVersion_SemVer }}
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+      with:
+        username: ${{ secrets.DOCKER_HUB_USER }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
