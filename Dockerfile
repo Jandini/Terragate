@@ -7,8 +7,8 @@ ADD res/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
 # Install prerequisites
-RUN apt update && \
-    apt install -y unzip
+RUN apt-get update && \
+    apt-get install -y unzip
 
 # Download and unpack terraform
 ADD https://releases.hashicorp.com/terraform/1.3.7/terraform_1.3.7_linux_amd64.zip /tmp
