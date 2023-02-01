@@ -1,7 +1,7 @@
 # Use dotnet git version to retrive semantic version
 
 if ($null -eq $global:gitVersion ) {
-    Write-Host "Getting git version..."
+    Write-Host "Running GitVersion..."
     $global:gitVersion=$(dotnet gitversion /showvariable SemVer)
     Write-Host "Current version is $global:gitVersion"
 }
