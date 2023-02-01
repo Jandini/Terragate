@@ -1,0 +1,1 @@
+@powershell .app-start.ps1

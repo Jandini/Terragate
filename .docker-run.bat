@@ -1,0 +1,1 @@
+@powershell .docker-run.ps1

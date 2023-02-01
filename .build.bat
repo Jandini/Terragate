@@ -1,3 +1,0 @@
-@echo off
-echo Build the Docker image...
-powershell .build.ps1
