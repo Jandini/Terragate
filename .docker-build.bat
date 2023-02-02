@@ -1,1 +1,0 @@
-@powershell .docker-build.ps1

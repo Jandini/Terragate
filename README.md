@@ -299,3 +299,7 @@ No solution yet, but quick workaround is to run publish in one statement.
 dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained
 ```
 
+
+## Push docker image to docker hub
+
+https://docs.docker.com/build/ci/github-actions/

@@ -12,6 +12,20 @@
                 .AddSingleton(config);
         }
 
+        
+        private static void ConfigureEnvironmentVariable(string name, string value, Serilog.ILogger logger)
+        {
+            if (Environment.GetEnvironmentVariable(name) == null)
+            {
+                logger.Debug("Adding {name:l} set to {dir}", name, value);
+                Environment.SetEnvironmentVariable(name, value);
+            }
+            else
+            {
+                logger.Debug("Using existing {name:l} provided to the environment", name);
+            }
+        }
+
         public static IApplicationBuilder UseTerraform(this IApplicationBuilder app)
         {
             var config = app.ApplicationServices.GetRequiredService<TerraformConfiguration>();
@@ -24,16 +38,19 @@
                 {
                     foreach (var variable in config.Variables)
                     {
-                        var name = $"TF_VAR_{variable.Name}";
+                        if (!string.IsNullOrEmpty(variable.Value))
+                        {
+                            var name = $"TF_VAR_{variable.Name}";
 
-                        if (Environment.GetEnvironmentVariable(name) == null)
-                        {
-                            logger.Debug("Adding {variableName:l} from configuration", name);
-                            Environment.SetEnvironmentVariable(name, variable.Value);
-                        }
-                        else
-                        {
-                            logger.Debug("Environment variable {variableName:l} already exists", name);
+                            if (Environment.GetEnvironmentVariable(name) == null)
+                            {
+                                logger.Debug("Adding {variableName:l} from configuration", name);
+                                Environment.SetEnvironmentVariable(name, variable.Value);
+                            }
+                            else
+                            {
+                                logger.Debug("Using {variableName:l} provided to the environment", name);
+                            }
                         }
                     }
                 }
@@ -48,14 +65,12 @@
                         dir.Create();
                     }
 
-                    logger.Debug("Adding TF_PLUGIN_CACHE_DIR set to {dir}", dir.FullName);
-                    Environment.SetEnvironmentVariable("TF_PLUGIN_CACHE_DIR", dir.FullName);
+                    ConfigureEnvironmentVariable("TF_PLUGIN_CACHE_DIR", dir.FullName, logger);
                 }
 
-                if (config.LogLevel != null)
+                if (!string.IsNullOrEmpty(config.LogLevel))
                 {
-                    logger.Debug("Adding TF_LOG set to {level}", config.LogLevel);
-                    Environment.SetEnvironmentVariable("TF_LOG", config.LogLevel);
+                    ConfigureEnvironmentVariable("TF_LOG", config.LogLevel, logger);               
                 }
             }
 
