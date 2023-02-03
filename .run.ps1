@@ -6,7 +6,7 @@ if ($LASTEXITCODE -ne 0) {
     return
 }
 
-Start-Process "chrome.exe" "http://localhost:8088/swagger/index.html" -ErrorAction SilentlyContinue
+Start-Process "http://localhost:8088/swagger/index.html" -ErrorAction SilentlyContinue
 
 docker build -t $global:currentTag .
 docker run -p 8088:80 -it -e ASPNETCORE_ENVIRONMENT=Development -e TF_VAR_VRA_USER=$env:TF_VAR_VRA_USER -e TF_VAR_VRA_PASS=$env:TF_VAR_VRA_PASS --rm $global:currentTag

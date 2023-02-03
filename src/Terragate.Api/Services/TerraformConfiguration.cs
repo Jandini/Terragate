@@ -1,7 +1,17 @@
-﻿namespace Terragate.Api.Services
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using System.Text;
+
+namespace Terragate.Api.Services
 {
     public class TerraformConfiguration
     {
+
+        public enum VariableType
+        {
+            Plain = 0,
+            Encoded = 1,
+        }
+
         public class TerraformDirectories
         {
             public string? Deployments { get; set; } 
@@ -12,6 +22,20 @@
         {
             public string? Name { get; set; }
             public string? Value { get; set; }
+            public VariableType? Type { get; set; } = VariableType.Plain;
+
+            public string? GetValue()
+            {
+                if (string.IsNullOrEmpty(Value)) 
+                    return Value;
+
+                return Type switch
+                {
+                    VariableType.Plain => Value,
+                    VariableType.Encoded => Encoding.UTF8.GetString(Convert.FromBase64String(Value)),
+                    _ => throw new NotSupportedException($"Variable type '{Type}' is not supported.")
+                }; ;
+            }
         }
 
         public class TerraformVariables : List<TerraformVariable> 

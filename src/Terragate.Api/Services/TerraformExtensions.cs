@@ -38,14 +38,16 @@
                 {
                     foreach (var variable in config.Variables)
                     {
-                        if (!string.IsNullOrEmpty(variable.Value))
+                        var value = variable.GetValue();
+
+                        if (!string.IsNullOrEmpty(value))
                         {
                             var name = $"TF_VAR_{variable.Name}";
 
                             if (Environment.GetEnvironmentVariable(name) == null)
                             {
                                 logger.Debug("Adding {variableName:l} from configuration", name);
-                                Environment.SetEnvironmentVariable(name, variable.Value);
+                                Environment.SetEnvironmentVariable(name, value);
                             }
                             else
                             {
