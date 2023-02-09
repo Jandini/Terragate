@@ -6,7 +6,7 @@ using Terragate.Api.Services;
 namespace Terragate.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/deployments")]
     public class DeploymentsController : ControllerBase
     {
         private readonly ILogger<DeploymentsController> _logger;
@@ -22,7 +22,7 @@ namespace Terragate.Api.Controllers
             _repository = repository;
         }
 
-        [HttpGet(Name = "GetDeployments")]
+        [HttpGet]
         public ActionResult<IEnumerable<DeploymentDto>> Get()
         {
             var deployments = _repository.GetDeployments();
@@ -35,13 +35,21 @@ namespace Terragate.Api.Controllers
         }
 
 
-        [HttpPost(Name = "CreateDeployment")]
+        [HttpPost]
         public async Task<IActionResult> Post(IFormFile[] files)
         {
             var deployment = await _repository.AddDeployment(files);
 
-            await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);            
-            await _terraform.StartAsync("apply -no-color -auto-approve -input=false", deployment.WorkingDirectory);
+            try
+            {
+
+                await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);
+                await _terraform.StartAsync("apply -no-color -auto-approve -input=false", deployment.WorkingDirectory);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return Ok(_mapper.Map<DeploymentDto>(deployment));
         }

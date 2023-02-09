@@ -1,16 +1,14 @@
-using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Reflection;
-using Terragate.Api;
 using Terragate.Api.Services;
 
-// Create web application builder.
+// Create web application builder
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
-// Create serilog logger.
+// Create serilog logger
 var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger()
@@ -20,13 +18,13 @@ var logger = new LoggerConfiguration()
 var assembly = Assembly.GetExecutingAssembly();
 var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
-// Log application version.
+// Log application version
 logger.Information($"Starting {assembly.GetName().Name} {{version}}", version);
 
-// Use serilog for webhosting.
+// Use serilog for webhosting
 builder.Host.UseSerilog(logger);
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllers();
 
 // Add terraform services
@@ -41,7 +39,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {        
     logger.Warning($"Adding swagger http://[::]80/swagger/index.html");
@@ -60,6 +58,9 @@ if (app.Environment.IsDevelopment())
 app.UseTerraform();
 
 app.UseHttpsRedirection();
+
+// Use explicit routes given in Route attribute
+app.UseRouting();
 
 app.UseAuthorization();
 
