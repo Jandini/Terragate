@@ -1,13 +1,13 @@
 # Use dotnet git version to retrive semantic version
 $global:gitVersion=$(dotnet gitversion /showvariable SemVer)
-docker version | Out-Null
+
+
+& docker version *> $null
 if ($LASTEXITCODE -ne 0) {
     # In some of my development machines I don't have docker desktop running all the time. 
     # This script is resposible for spinning up docker desktop if not already running.
-
     # Uncheck "Open Docker Dashboard at startup" in "General" docker desktop settings 
     # to prevent docker desktop window showing up.
-
     $service = { return (Get-Service -Name com.docker.service).Status }
     $status = & $service
 
@@ -51,9 +51,7 @@ if ($LASTEXITCODE -ne 0) {
         }
 
         Write-Host .
-    }
-    
-    docker -v
+    }    
 }
 
 Write-Host "Branch version $global:gitVersion"
