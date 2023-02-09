@@ -1,11 +1,9 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-using System.Text;
+﻿using System.Text;
 
 namespace Terragate.Api.Services
 {
     public class TerraformConfiguration
     {
-
         public enum VariableType
         {
             Plain = 0,
