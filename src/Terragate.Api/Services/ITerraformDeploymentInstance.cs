@@ -2,7 +2,7 @@
 {
     public interface ITerraformDeploymentInstance
     {
-        string HostName { get; }
-        string IpAddress { get; }
+        string? HostName { get; }
+        string? IpAddress { get; }
     }
 }

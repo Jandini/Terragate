@@ -1,4 +1,3 @@
-using Terragate.Api.Services;
 
 namespace Terragate.Api.Models
 {
@@ -6,6 +5,6 @@ namespace Terragate.Api.Models
     {
         public Guid Guid { get; set; }
         public DateTime CreatedDate { get; set; }
-        public ITerraformDeploymentInstance[]? Instances { get; set; }
+        public DeploymentInstanceDto[]? Instances { get; set; }
     }
 }

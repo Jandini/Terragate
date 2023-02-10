@@ -2,13 +2,13 @@
 {
     public class TerraformDeploymentInstance : ITerraformDeploymentInstance
     {
-        public string HostName { get; set;}
+        public string? HostName { get; set;}
 
-        public string IpAddress { get; set;}
+        public string? IpAddress { get; set;}
 
         public TerraformDeploymentInstance(string hostName, string ipAddress)
         {
-            HostName = hostName;    
+            HostName = hostName;
             IpAddress = ipAddress;
         }
     }
