@@ -57,6 +57,7 @@ namespace Terragate.Api.Services
                                         foreach (var rc in ri.Attributes.ResourceConfiguration)
                                         {
                                             if (rc.Instances != null)
+
                                             foreach (var instance in rc.Instances)
                                             {
                                                 if (instance.Name != null && instance.IpAddress != null)

@@ -1,3 +1,4 @@
+using AutoMapper;
 using Serilog;
 using Serilog.Events;
 using System.Reflection;
@@ -38,6 +39,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
+
+
+#if DEBUG
+// Assert mapper configuration only in DEBUG 
+app.Services.GetRequiredService<IMapper>().ConfigurationProvider.AssertConfigurationIsValid();
+#endif
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

@@ -3,7 +3,6 @@
     public interface ITerraformDeploymentRepository
     {
         IEnumerable<ITerraformDeployment> GetDeployments();
-
         Task<ITerraformDeployment> AddDeployment(IFormFile[] terraformFiles);
     }
 }
