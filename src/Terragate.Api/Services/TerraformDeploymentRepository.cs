@@ -28,10 +28,33 @@ namespace Terragate.Api.Services
             var deployments = _root.GetDirectories("????????-????-????-????-????????????")
                .Where(d => new FileInfo(Path.Combine(d.FullName, TERRAFORM_STATE_FILE)).Exists)
                .Select(d => new TerraformDeployment() { Guid = Guid.Parse(d.Name), WorkingDirectory = d, Instances = GetInstances(d) })
-               .ToArray();                 
+               .ToArray();
 
             return deployments;
         }
+
+
+        public ITerraformDeployment GetDeployment(Guid guid)
+        {
+            var dir = new DirectoryInfo(Path.Combine(_root.FullName, guid.ToString()));
+
+            if (!dir.Exists)
+            {
+                _logger.LogError("Deployment directory not found. {dir} ", dir.FullName);
+                throw new DirectoryNotFoundException(dir.Name);
+            }
+
+            var state = new FileInfo(Path.Combine(dir.FullName, TERRAFORM_STATE_FILE));
+
+            if (!state.Exists)
+            {
+                _logger.LogError("Deployment state file not found. {file} ", state.FullName);
+                throw new FileNotFoundException(state.Name);
+            }
+
+            return new TerraformDeployment() { Guid = guid, WorkingDirectory = dir, Instances = GetInstances(dir) };
+        }
+
 
         private ITerraformDeploymentInstance[] GetInstances(DirectoryInfo deploymentDir)
         {
