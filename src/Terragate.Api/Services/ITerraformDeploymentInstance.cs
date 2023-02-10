@@ -4,5 +4,9 @@
     {
         string? HostName { get; }
         string? IpAddress { get; }
+        string? CatalogItemName { get; }
+        DateTime ExpiryDate { get; }
+        DateTime CreatedDate { get; }
+
     }
 }

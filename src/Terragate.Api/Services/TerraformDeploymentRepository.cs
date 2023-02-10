@@ -27,7 +27,7 @@ namespace Terragate.Api.Services
         {          
             var deployments = _root.GetDirectories("????????-????-????-????-????????????")
                .Where(d => new FileInfo(Path.Combine(d.FullName, TERRAFORM_STATE_FILE)).Exists)
-               .Select(d => new TerraformDeployment() { Guid = Guid.Parse(d.Name), CreatedDate = d.CreationTime, WorkingDirectory = d, Instances = GetInstances(d) })
+               .Select(d => new TerraformDeployment() { Guid = Guid.Parse(d.Name), WorkingDirectory = d, Instances = GetInstances(d) })
                .ToArray();                 
 
             return deployments;
@@ -48,29 +48,45 @@ namespace Terragate.Api.Services
                     foreach (var resource in terraformState.Resources)
                     {
                         if (resource.Instances != null)
+                        {
                             foreach (var ri in resource.Instances)
                             {
                                 if (ri.Attributes != null)
+                                {
                                     if (ri.Attributes.RequestStatus == "SUCCESSFUL")
-                                    {                                   
+                                    {
                                         if (ri.Attributes.ResourceConfiguration != null)
-                                        foreach (var rc in ri.Attributes.ResourceConfiguration)
                                         {
-                                            if (rc.Instances != null)
-
-                                            foreach (var instance in rc.Instances)
+                                            foreach (var rc in ri.Attributes.ResourceConfiguration)
                                             {
-                                                if (instance.Name != null && instance.IpAddress != null)
-                                                    instances.Add(new TerraformDeploymentInstance(instance.Name, instance.IpAddress));
+                                                if (rc.Instances != null)
+                                                {
+                                                    foreach (var instance in rc.Instances)
+                                                    {
+                                                        if (instance.Name != null && instance.IpAddress != null)
+                                                            instances.Add(new TerraformDeploymentInstance()
+                                                            {
+                                                                HostName = instance.Name,
+                                                                IpAddress = instance.IpAddress,
+                                                                CatalogItemName = ri.Attributes.CatalogItemName,
+                                                                ExpiryDate = ri.Attributes.ExpiryDate,
+                                                                CreatedDate = ri.Attributes.CreatedDate
+
+
+                                                            });
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        _logger.LogWarning("Resource instance {name} status is {status}", ri.Attributes.Name, ri.Attributes.RequestStatus);
+                                        _logger.LogWarning("Resource instance {name} status is {status}", ri.Attributes?.Name, ri.Attributes?.RequestStatus);
                                     }
                                 }
+                            }
                         }
+                    }
                 }               
             }
             catch (Exception ex)
@@ -89,8 +105,7 @@ namespace Terragate.Api.Services
             var deployment = new TerraformDeployment()
             {
                 Guid = guid,
-                WorkingDirectory = _root.CreateSubdirectory(guid.ToString()),
-                CreatedDate = DateTime.UtcNow,
+                WorkingDirectory = _root.CreateSubdirectory(guid.ToString()),                
             };
 
             foreach (var file in terraformFiles)
