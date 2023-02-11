@@ -10,6 +10,7 @@ namespace Terragate.Api.Services
         
         private readonly ILogger<TerraformInfrastructureRepository> _logger;
         private readonly DirectoryInfo _root;
+        private readonly DirectoryInfo? _templates;
         private readonly IMapper _mapper;
 
 
@@ -17,12 +18,20 @@ namespace Terragate.Api.Services
         {
             _logger = logger;
             _mapper = mapper;  
-            _root = new DirectoryInfo(configuration.InfraDir);
+            _root = new DirectoryInfo(configuration.InfrasDir);
 
             if (!_root.Exists)
             {
                 _logger.LogDebug("Creating {root} directory", _root.FullName);
                 _root.Create();
+            }
+
+            if (configuration.UseTemplates)
+            {                
+                _templates = new DirectoryInfo(configuration.TemplatesDir);
+
+                if (!_templates.Exists)
+                    _templates = null;
             }
         }
 
@@ -129,11 +138,20 @@ namespace Terragate.Api.Services
             var dir = _root.CreateSubdirectory(id.ToString());
             var infrastructure = new TerraformInfrastructure(dir);
 
+            if (_templates != null)
+            {
+                foreach (var file in _templates.GetFiles())
+                {
+                    _logger.LogWarning("Adding template {file}", file.Name);
+                    File.Copy(file.FullName, Path.Combine(dir.FullName, file.Name));
+                }
+            }
+
             foreach (var file in terraformFiles)
             {
                 var path = Path.Combine(infrastructure.WorkingDirectory.FullName, file.FileName);
                 
-                _logger.LogDebug("Creating file {path}", Path.Combine(_root.Name, file.FileName));
+                _logger.LogDebug("Creating file {path}", Path.Combine(dir.FullName, file.FileName));
                 using var stream = new FileStream(path, FileMode.Create);
                 await file.CopyToAsync(stream);
             }
