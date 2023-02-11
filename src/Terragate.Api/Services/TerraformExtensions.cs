@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using static Terragate.Api.Services.TerraformState;
 
 namespace Terragate.Api.Services
 {
@@ -71,11 +72,34 @@ namespace Terragate.Api.Services
                     ConfigureEnvironmentVariable("TF_PLUGIN_CACHE_DIR", dir.FullName, logger);
                 }
 
-
-
-                if (!string.IsNullOrEmpty(config.LogLevel))
+                if (config.UseTemplates)
                 {
-                    ConfigureEnvironmentVariable("TF_LOG", config.LogLevel, logger);               
+                    var dir = new DirectoryInfo(config.TemplatesDir);
+
+                    if (!dir.Exists)
+                    {                                                
+                        try
+                        {
+                            logger.Debug("Creating templates in {templates}", dir.FullName);
+
+                            dir.Create();
+
+                            logger.Warning("Templates are created only once");
+                            logger.Warning("You can add, remove or alter the templates");
+                            logger.Warning("The template files will be added to every new infrastructure");
+                            logger.Warning("Ensure the template files have unique name");
+
+                            foreach (var file in new DirectoryInfo("Templates").GetFiles())
+                            {
+                                logger.Debug("Copying {file}", file.Name);
+                                File.Copy(file.FullName, Path.Combine(dir.FullName, file.Name));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex, "Copy templates failed");
+                        }
+                    }
                 }
             }
 

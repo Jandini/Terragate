@@ -33,23 +33,37 @@ namespace Terragate.Api.Services
         public class TerraformVariables : List<TerraformVariable> 
         { 
 
-        }
-
-        /// <summary>
-        /// Possible values are TRACE, DEBUG, INFO, WARN, ERROR, FATAL
-        /// </summary>
-        public string? LogLevel { get; set; }
+        }      
 
         /// <summary>
         /// Enable or disable data/plugins cache directory 
         /// </summary>
         public bool UsePluginCache { get; set; } = true;
+
+        /// <summary>
+        /// Copy all *.tf file from app folder to infrastructure.        
+        /// </summary>
+        public bool UseTemplates { get; set; } = true;
+
         /// <summary>
         /// Terraform data directory
         /// </summary>
         public string DataDir { get; set; } = "data";
+
+        /// <summary>
+        /// *.tf file in templates directory will be copied to each infrastracture
+        /// </summary>
+        public string TemplatesDir { get => Path.Combine(DataDir, "templates"); }
+
+        /// <summary>
+        /// Plugins cache directory
+        /// </summary>
         public string PluginsDir { get => Path.Combine(DataDir, "plugins"); }
-        public string InfraDir { get => Path.Combine(DataDir, "infra"); }
+
+        /// <summary>
+        /// Infrastructures home directory 
+        /// </summary>
+        public string InfrasDir { get => Path.Combine(DataDir, "infras"); }
 
 
         /// <summary>

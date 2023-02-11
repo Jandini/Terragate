@@ -350,7 +350,7 @@ MigrationBackup/
 .ionide/
 
 # Ignore local certificates and sample tf files
-**/*.tf
+res/*.tf
 **/*.crt
 **/*.cer
 
