@@ -359,5 +359,5 @@ MigrationBackup/
 *terraform.log
 *.hcl
 
-.plugins
-.vra
+# Ignore terragate data folder
+.data
