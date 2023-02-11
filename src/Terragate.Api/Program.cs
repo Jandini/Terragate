@@ -20,7 +20,7 @@ var assembly = Assembly.GetExecutingAssembly();
 var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
 // Log application version
-logger.Information($"Starting {assembly.GetName().Name} {{version}}", version);
+logger.Information($"Starting {assembly.GetName().Name} {{version:l}}", version);
 
 // Use serilog for webhosting
 builder.Host.UseSerilog(logger);
@@ -33,7 +33,12 @@ builder.Services.AddTerraform(builder.Configuration);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(
+    // Get rid of Dto postfix 
+    options => options.CustomSchemaIds((type) => type.Name.EndsWith("Dto") 
+        ? type.Name[..^3] 
+        : type.Name));
 
 // Add AutoMapper service
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
