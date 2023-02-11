@@ -1,6 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using AutoMapper.Configuration.Annotations;
+using System.Text.Json.Serialization;
 
-namespace Terragate.Api.Models
+namespace Terragate.Api.Services
 {
     public class TerraformState
     {
@@ -356,10 +357,10 @@ namespace Terragate.Api.Models
         public class Attributes
         {
             [JsonPropertyName("businessgroup_id")]
-            public string? BusinessgroupId { get; set; }
+            public string? BusinessGroupId { get; set; }
 
             [JsonPropertyName("businessgroup_name")]
-            public string? BusinessgroupName { get; set; }
+            public string? BusinessGroupName { get; set; }
 
             [JsonPropertyName("catalog_item_id")]
             public string? CatalogItemId { get; set; }

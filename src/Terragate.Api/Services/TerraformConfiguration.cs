@@ -10,12 +10,6 @@ namespace Terragate.Api.Services
             Encoded = 1,
         }
 
-        public class TerraformDirectories
-        {
-            public string? Deployments { get; set; } 
-            public string? Plugins { get; set; } 
-        }
-
         public class TerraformVariable
         {
             public string? Name { get; set; }
@@ -42,15 +36,20 @@ namespace Terragate.Api.Services
         }
 
         /// <summary>
-        /// Possible values are TRACE, DEBUG, INFO, WARN, ERROR, FATAL.
+        /// Possible values are TRACE, DEBUG, INFO, WARN, ERROR, FATAL
         /// </summary>
         public string? LogLevel { get; set; }
 
         /// <summary>
-        /// Terraform working directories.
+        /// Enable or disable data/plugins cache directory 
         /// </summary>
-        public TerraformDirectories? Directories { get; set; }
-
+        public bool UsePluginCache { get; set; } = true;
+        /// <summary>
+        /// Terraform data directory
+        /// </summary>
+        public string DataDir { get; set; } = "data";
+        public string PluginsDir { get => Path.Combine(DataDir, "plugins"); }
+        public string InfraDir { get => Path.Combine(DataDir, "infra"); }
 
 
         /// <summary>

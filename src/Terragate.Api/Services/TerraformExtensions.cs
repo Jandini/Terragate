@@ -1,4 +1,6 @@
-﻿namespace Terragate.Api.Services
+﻿using AutoMapper;
+
+namespace Terragate.Api.Services
 {
     public static class TerraformExtensions
     {
@@ -8,7 +10,7 @@
 
             return services
                 .AddScoped<ITerraformProcessService, TerraformProcessService>()
-                .AddScoped<ITerraformDeploymentRepository, TerraformDeploymentRepository>()
+                .AddScoped<ITerraformInfrastructureRepository, TerraformInfrastructureRepository>()
                 .AddSingleton(config);
         }
 
@@ -24,13 +26,12 @@
             {
                 logger.Debug("Using existing {name:l} provided to the environment", name);
             }
-        }
+        }      
 
         public static IApplicationBuilder UseTerraform(this IApplicationBuilder app)
         {
             var config = app.ApplicationServices.GetRequiredService<TerraformConfiguration>();
-            var logger = app.ApplicationServices.GetRequiredService<Serilog.ILogger>()
-                .ForContext<Program>();
+            var logger = app.ApplicationServices.GetRequiredService<Serilog.ILogger>().ForContext<Program>();
 
             if (config != null)  
             {
@@ -55,11 +56,11 @@
                             }
                         }
                     }
-                }
+                }              
 
-                if (config.Directories?.Plugins != null)
+                if (config.UsePluginCache)
                 {
-                    var dir = new DirectoryInfo(config.Directories.Plugins);
+                    var dir = new DirectoryInfo(config.PluginsDir);
 
                     if (!dir.Exists)
                     {
@@ -69,6 +70,8 @@
 
                     ConfigureEnvironmentVariable("TF_PLUGIN_CACHE_DIR", dir.FullName, logger);
                 }
+
+
 
                 if (!string.IsNullOrEmpty(config.LogLevel))
                 {
