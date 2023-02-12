@@ -10,29 +10,21 @@ namespace Terragate.Api.Services
         
         private readonly ILogger<TerraformInfrastructureRepository> _logger;
         private readonly DirectoryInfo _root;
-        private readonly DirectoryInfo? _templates;
         private readonly IMapper _mapper;
 
 
-        public TerraformInfrastructureRepository(ILogger<TerraformInfrastructureRepository> logger, TerraformConfiguration configuration, IMapper mapper)
+        public TerraformInfrastructureRepository(ILogger<TerraformInfrastructureRepository> logger, ITerraformConfigurationService config, IMapper mapper)
         {
             _logger = logger;
-            _mapper = mapper;  
-            _root = new DirectoryInfo(configuration.InfrasDir);
+            _mapper = mapper;
+
+            _root = new DirectoryInfo(config.GetTerraformConfig().InfrasPath);
 
             if (!_root.Exists)
             {
                 _logger.LogDebug("Creating {root} directory", _root.FullName);
                 _root.Create();
-            }
-
-            if (configuration.UseTemplates)
-            {                
-                _templates = new DirectoryInfo(configuration.TemplatesDir);
-
-                if (!_templates.Exists)
-                    _templates = null;
-            }
+            }           
         }
 
         public IEnumerable<ITerraformInfrastructure> GetInfrastructures()
@@ -132,20 +124,24 @@ namespace Terragate.Api.Services
             return resources.ToArray();
         }
 
+
+        public async Task AddTemplates(DirectoryInfo templates, ITerraformInfrastructure infra)
+        {           
+            foreach (var file in templates.GetFiles())
+            {
+                _logger.LogWarning("Adding template {file}", file.Name);
+
+                using var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 8192, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                using var target = new FileStream(Path.Combine(infra.WorkingDirectory.FullName, file.Name), FileMode.CreateNew, FileAccess.Write, FileShare.None, 8192, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                await source.CopyToAsync(target);
+            }
+        }
+
         public async Task<ITerraformInfrastructure> AddInfrastructure(IFormFile[] terraformFiles)
         {
             var id = Guid.NewGuid();
             var dir = _root.CreateSubdirectory(id.ToString());
-            var infrastructure = new TerraformInfrastructure(dir);
-
-            if (_templates != null)
-            {
-                foreach (var file in _templates.GetFiles())
-                {
-                    _logger.LogWarning("Adding template {file}", file.Name);
-                    File.Copy(file.FullName, Path.Combine(dir.FullName, file.Name));
-                }
-            }
+            var infrastructure = new TerraformInfrastructure(dir);         
 
             foreach (var file in terraformFiles)
             {
@@ -158,6 +154,7 @@ namespace Terragate.Api.Services
 
             return infrastructure; 
         }
+
 
         public void DeleteInfrastructure(Guid id)
         {

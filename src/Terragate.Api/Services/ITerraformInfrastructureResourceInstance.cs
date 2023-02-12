@@ -1,5 +1,4 @@
-﻿
-namespace Terragate.Api.Services
+﻿namespace Terragate.Api.Services
 {
     public interface ITerraformInfrastructureResourceInstance
     {

@@ -6,12 +6,10 @@ namespace Terragate.Api.Services
     public class TerraformProcessService : ITerraformProcessService
     {
         private readonly ILogger<TerraformProcessService> _logger;
-        private readonly TerraformConfiguration _config;
 
-        public TerraformProcessService(ILogger<TerraformProcessService> logger, TerraformConfiguration config)
+        public TerraformProcessService(ILogger<TerraformProcessService> logger)
         {
             _logger = logger;
-            _config = config;
         }
 
 
