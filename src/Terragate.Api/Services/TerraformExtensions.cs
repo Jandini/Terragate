@@ -1,18 +1,13 @@
-﻿using AutoMapper;
-using static Terragate.Api.Services.TerraformState;
-
-namespace Terragate.Api.Services
+﻿namespace Terragate.Api.Services
 {
     public static class TerraformExtensions
     {
         public static IServiceCollection AddTerraform(this IServiceCollection services, IConfiguration configuration)
         {
-            var config = configuration.GetSection("Terraform").Get<TerraformConfiguration>() ?? new TerraformConfiguration();
-
             return services
                 .AddScoped<ITerraformProcessService, TerraformProcessService>()
                 .AddScoped<ITerraformInfrastructureRepository, TerraformInfrastructureRepository>()
-                .AddSingleton(config);
+                .AddSingleton<ITerraformConfigurationService, TerraformConfigurationService>();
         }
 
         
@@ -30,15 +25,18 @@ namespace Terragate.Api.Services
         }      
 
         public static IApplicationBuilder UseTerraform(this IApplicationBuilder app)
-        {
-            var config = app.ApplicationServices.GetRequiredService<TerraformConfiguration>();
+        {            
+            var config = app.ApplicationServices.GetRequiredService<ITerraformConfigurationService>();
             var logger = app.ApplicationServices.GetRequiredService<Serilog.ILogger>().ForContext<Program>();
 
-            if (config != null)  
+
+            var terra = config.GetTerraformConfig();
+
+            if (terra != null)  
             {
-                if (config.Variables != null)
+                if (terra.Variables != null)
                 {
-                    foreach (var variable in config.Variables)
+                    foreach (var variable in terra.Variables)
                     {
                         var value = variable.GetValue();
 
@@ -59,9 +57,9 @@ namespace Terragate.Api.Services
                     }
                 }              
 
-                if (config.UsePluginCache)
+                if (terra.UsePluginCache)
                 {
-                    var dir = new DirectoryInfo(config.PluginsDir);
+                    var dir = new DirectoryInfo(terra.PluginsPath);
 
                     if (!dir.Exists)
                     {
@@ -72,12 +70,12 @@ namespace Terragate.Api.Services
                     ConfigureEnvironmentVariable("TF_PLUGIN_CACHE_DIR", dir.FullName, logger);
                 }
 
-                if (config.UseTemplates)
+                if (terra.UseTemplates)
                 {
-                    var dir = new DirectoryInfo(config.TemplatesDir);
+                    var dir = config.GetTemplatesDir();
 
                     if (!dir.Exists)
-                    {                                                
+                    { 
                         try
                         {
                             logger.Debug("Creating templates in {templates}", dir.FullName);

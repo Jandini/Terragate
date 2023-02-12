@@ -13,24 +13,26 @@ namespace Terragate.Api.Controllers
         private readonly IMapper _mapper;
         private readonly ITerraformProcessService _terraform;
         private readonly ITerraformInfrastructureRepository _repository;
+        private readonly ITerraformConfigurationService _config;
 
-        public InfrastructuresController(ILogger<InfrastructuresController> logger, IMapper mapper, ITerraformProcessService terraform, ITerraformInfrastructureRepository repository)
+
+        public InfrastructuresController(ILogger<InfrastructuresController> logger, IMapper mapper, ITerraformProcessService terraform, ITerraformInfrastructureRepository repository, ITerraformConfigurationService config)
         {
             _logger = logger;
             _mapper = mapper;
             _terraform = terraform;
             _repository = repository;
+            _config = config;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<InfrastructureDto>> Get()
         {
             var infrastructures = _repository.GetInfrastructures().Where(a => a.Resources.Any());
-
             var results = _mapper.Map<IEnumerable<InfrastructureDto>>(infrastructures);
 
             if (results.Any())
-                _logger.LogDebug("{@infrastructures}", results);
+                _logger.LogDebug("{@infras}", results);
 
             return Ok(results);
         }
@@ -41,19 +43,22 @@ namespace Terragate.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(IFormFile[] files)
         {
-            var deployment = await _repository.AddInfrastructure(files);
-
             try
             {
-                await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);
-                await _terraform.StartAsync("apply -no-color -auto-approve -input=false", deployment.WorkingDirectory);
+                var infra = await _repository.AddInfrastructure(files);
+
+                if (_config.UseTemplates(out var templates))
+                    await _repository.AddTemplates(templates, infra);
+
+                await _terraform.StartAsync("init -no-color -input=false", infra.WorkingDirectory);
+                await _terraform.StartAsync("apply -no-color -auto-approve -input=false", infra.WorkingDirectory);
+
+                return Ok(_mapper.Map<InfrastructureDto>(infra));
             }
             catch (Exception ex)
-            {
+            {               
                 return BadRequest(ex.Message);
-            }
-
-            return Ok(_mapper.Map<InfrastructureDto>(deployment));
+            }            
         }
     }
 }

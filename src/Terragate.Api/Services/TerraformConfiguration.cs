@@ -51,19 +51,19 @@ namespace Terragate.Api.Services
         public string DataDir { get; set; } = "data";
 
         /// <summary>
-        /// *.tf file in templates directory will be copied to each infrastracture
+        /// Templates directory path
         /// </summary>
-        public string TemplatesDir { get => Path.Combine(DataDir, "templates"); }
+        public string TemplatesPath { get => Path.Combine(DataDir, "templates"); }
 
         /// <summary>
-        /// Plugins cache directory
+        /// Plugins cache directory path
         /// </summary>
-        public string PluginsDir { get => Path.Combine(DataDir, "plugins"); }
+        public string PluginsPath { get => Path.Combine(DataDir, "plugins"); }
 
         /// <summary>
-        /// Infrastructures home directory 
+        /// Infrastructures home directory path
         /// </summary>
-        public string InfrasDir { get => Path.Combine(DataDir, "infras"); }
+        public string InfrasPath { get => Path.Combine(DataDir, "infras"); }
 
 
         /// <summary>

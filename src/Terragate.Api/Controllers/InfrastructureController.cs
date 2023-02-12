@@ -23,10 +23,10 @@ namespace Terragate.Api.Controllers
         }
 
         /// <summary>
-        /// Get deployment by id
+        /// Get infrastructure by id
         /// </summary>
-        /// <param name="id">The id of deployment to get</param>
-        /// <returns>Requested deployment</returns>
+        /// <param name="id">The id of infrastructure to get</param>
+        /// <returns>Requested infrastructure</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -35,25 +35,25 @@ namespace Terragate.Api.Controllers
         {
             try
             {
-                var deployment = _repository.GetInfrastructure(id);
-                return Ok(_mapper.Map<InfrastructureDto>(deployment));
+                var infrastrucutre  = _repository.GetInfrastructure(id);
+                return Ok(_mapper.Map<InfrastructureDto>(infrastrucutre));
             }
             catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
-            {                
+            {
                 return NotFound();
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex);
             }
         }
 
 
         /// <summary>
-        /// Refresh the deployment by running terragate init
+        /// Refresh the infrastrucutre by running terragate init
         /// </summary>
-        /// <param name="id">The id of the deployment to refresh</param>
-        /// <returns>Refreshed deployment</returns>
+        /// <param name="id">The id of the infrastrucutre to refresh</param>
+        /// <returns>Refreshed infrastrucutre</returns>
         [HttpPut()]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -62,19 +62,19 @@ namespace Terragate.Api.Controllers
         {           
             try
             {
-                var deployment = _repository.GetInfrastructure(id);
-                await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);
-                await _terraform.StartAsync("refresh -no-color -input=false", deployment.WorkingDirectory);
+                var infra = _repository.GetInfrastructure(id);
+                await _terraform.StartAsync("init -no-color -input=false", infra.WorkingDirectory);
+                await _terraform.StartAsync("refresh -no-color -input=false", infra.WorkingDirectory);
 
-                deployment = _repository.GetInfrastructure(id);
-                return Ok(_mapper.Map<InfrastructureDto>(deployment));
+                infra = _repository.GetInfrastructure(id);
+                return Ok(_mapper.Map<InfrastructureDto>(infra));
             }
             catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
             {                
-                return NotFound();
+                return NotFound();                
             }
             catch (Exception ex)
-            {
+            {                
                 return BadRequest(ex.Message);
             }
         }
@@ -109,7 +109,7 @@ namespace Terragate.Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
-            }
+            }            
         }
     }
 }
