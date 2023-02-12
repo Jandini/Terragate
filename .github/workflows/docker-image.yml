@@ -41,5 +41,5 @@ jobs:
         context: .
         file: ./Dockerfile.production
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/terragate:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/terragate:latest, ${{ secrets.DOCKERHUB_USERNAME }}/terragate:${{ env.GitVersion_SemVer }}
         
