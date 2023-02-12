@@ -52,6 +52,8 @@ namespace Terragate.Api.Controllers
 
                 await _terraform.StartAsync("init -no-color -input=false", infra.WorkingDirectory);
                 await _terraform.StartAsync("apply -no-color -auto-approve -input=false", infra.WorkingDirectory);
+                
+                infra = _repository.GetInfrastructure(infra.Id);
 
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
             }

@@ -47,7 +47,7 @@ namespace Terragate.Api.Services
 
             if (!dir.Exists)
             {
-                _logger.LogError("Deployment directory not found. {dir} ", dir.FullName);
+                _logger.LogError("Infrastructure directory not found. {dir} ", dir.FullName);
                 throw new DirectoryNotFoundException(dir.Name);
             }
 
@@ -55,7 +55,7 @@ namespace Terragate.Api.Services
 
             if (!state.Exists)
             {
-                _logger.LogError("Deployment state file not found. {file} ", state.FullName);
+                _logger.LogError("Infrastructure state file not found. {file} ", state.FullName);
                 throw new FileNotFoundException(state.Name);
             }
 
