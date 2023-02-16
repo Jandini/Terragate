@@ -19,7 +19,7 @@ var logger = new LoggerConfiguration()
 var health = new HealthService().GetHealthInfo();
 logger.Information($"Starting {health.ServiceName} {{version:l}}", health.ServiceVersion);
 
-// Use serilog for webhosting
+// Use serilog for web hosting
 builder.Host.UseSerilog(logger);
 
 // Add services to the container
@@ -70,9 +70,6 @@ if (app.Environment.IsDevelopment())
 app.UseTerraform();
 
 app.UseHttpsRedirection();
-
-// Use explicit routes given in Route attribute
-app.UseRouting();
 
 app.UseAuthorization();
 
