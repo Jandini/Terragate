@@ -1,12 +1,12 @@
 using AutoMapper;
 using Serilog;
 using Serilog.Events;
-using System.Reflection;
 using Terragate.Api.Services;
 
 // Create web application builder
 var builder = WebApplication.CreateBuilder(args);
 
+// Alter configuration with environment variables
 builder.Configuration.AddEnvironmentVariables();
 
 // Create serilog logger
@@ -15,14 +15,11 @@ var logger = new LoggerConfiguration()
     .CreateLogger()
     .ForContext<Program>();
 
-// Get application version.
-var assembly = Assembly.GetExecutingAssembly();
-var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-
 // Log application version
-logger.Information($"Starting {assembly.GetName().Name} {{version:l}}", version);
+var health = new HealthService().GetHealthInfo();
+logger.Information($"Starting {health.ServiceName} {{version:l}}", health.ServiceVersion);
 
-// Use serilog for webhosting
+// Use serilog for web hosting
 builder.Host.UseSerilog(logger);
 
 // Add services to the container
@@ -30,6 +27,9 @@ builder.Services.AddControllers();
 
 // Add terraform services
 builder.Services.AddTerraform(builder.Configuration);
+
+// Add health service
+builder.Services.AddHealth();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -46,7 +46,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 var app = builder.Build();
 
 
-#if DEBUG
+#if (DEBUG)
 // Assert mapper configuration only in DEBUG 
 app.Services.GetRequiredService<IMapper>().ConfigurationProvider.AssertConfigurationIsValid();
 #endif
@@ -70,9 +70,6 @@ if (app.Environment.IsDevelopment())
 app.UseTerraform();
 
 app.UseHttpsRedirection();
-
-// Use explicit routes given in Route attribute
-app.UseRouting();
 
 app.UseAuthorization();
 
