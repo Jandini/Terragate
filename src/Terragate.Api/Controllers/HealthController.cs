@@ -1,6 +1,7 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection;
 using Terragate.Api.Models;
+using Terragate.Api.Services;
 
 namespace Terragate.Api.Controllers
 {
@@ -9,26 +10,26 @@ namespace Terragate.Api.Controllers
     public class HealthController : ControllerBase
     {
         private readonly ILogger<HealthController> _logger;
+        private readonly IHealthService _healthService;
+        private readonly IMapper _mapper;
 
-        public HealthController(ILogger<HealthController> logger)
+        public HealthController(ILogger<HealthController> logger, IHealthService healthService, IMapper mapper)
         {
             _logger = logger;
+            _healthService = healthService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<HealthDto> Get()
+        public ActionResult<HealthInfoDto> GetHealthInfo()
         {
             try
             {
-                var assembly = Assembly.GetExecutingAssembly();
-                var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
-                var health = new HealthDto() { TerragateVersion = version };
-
-                _logger.LogDebug("{@health}", health);
-
-                return Ok(health);
+                _logger.LogDebug("Getting health info");
+                var healthInfo = _healthService.GetHealthInfo();
+                return Ok(_mapper.Map<HealthInfoDto>(healthInfo));
             }
             catch (Exception ex)
             {

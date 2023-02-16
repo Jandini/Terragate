@@ -10,7 +10,7 @@
                 .AddSingleton<ITerraformConfigurationService, TerraformConfigurationService>();
         }
 
-        
+
         private static void ConfigureEnvironmentVariable(string name, string value, Serilog.ILogger logger)
         {
             if (Environment.GetEnvironmentVariable(name) == null)
@@ -22,17 +22,17 @@
             {
                 logger.Debug("Using existing {name:l} provided to the environment", name);
             }
-        }      
+        }
 
         public static IApplicationBuilder UseTerraform(this IApplicationBuilder app)
-        {            
+        {
             var config = app.ApplicationServices.GetRequiredService<ITerraformConfigurationService>();
             var logger = app.ApplicationServices.GetRequiredService<Serilog.ILogger>().ForContext<Program>();
 
 
             var terra = config.GetTerraformConfig();
 
-            if (terra != null)  
+            if (terra != null)
             {
                 if (terra.Variables != null)
                 {
@@ -55,7 +55,7 @@
                             }
                         }
                     }
-                }              
+                }
 
                 if (terra.UsePluginCache)
                 {
@@ -75,7 +75,7 @@
                     var dir = config.GetTemplatesDir();
 
                     if (!dir.Exists)
-                    { 
+                    {
                         try
                         {
                             logger.Debug("Creating templates in {templates}", dir.FullName);
