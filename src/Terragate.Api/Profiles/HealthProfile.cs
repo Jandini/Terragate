@@ -6,7 +6,7 @@ namespace Terragate.Api.Profiles
     {
         public HealthProfile() 
         {
-            CreateMap<Services.HealthInfo, Models.HealthInfoDto>();
+            CreateMap<Services.HealthInfo, Models.TerragateHealthInfoDto>();
         }
     }
 }

@@ -23,13 +23,13 @@ namespace Terragate.Api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<HealthInfoDto> GetHealthInfo()
+        public ActionResult<TerragateHealthInfoDto> GetHealthInfo()
         {
             try
             {
                 _logger.LogDebug("Getting health info");
                 var healthInfo = _healthService.GetHealthInfo();
-                return Ok(_mapper.Map<HealthInfoDto>(healthInfo));
+                return Ok(_mapper.Map<TerragateHealthInfoDto>(healthInfo));
             }
             catch (Exception ex)
             {
