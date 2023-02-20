@@ -40,10 +40,10 @@ namespace Terragate.Api.Services
 
 
         private DirectoryInfo GetInfrastructureDir(Guid? id)
-        {
-            if (id == null)
+        {           
+            if (!id.HasValue)
                 throw new ArgumentNullException(nameof(id));
-            
+
             return new(Path.Combine(_root.FullName, id!.ToString()));
         }
 

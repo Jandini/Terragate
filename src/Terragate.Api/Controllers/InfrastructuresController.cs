@@ -25,7 +25,7 @@ namespace Terragate.Api.Controllers
             _config = config;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetInfrastructures")]
         public ActionResult<IEnumerable<InfrastructureDto>> Get()
         {
             var infrastructures = _repository.GetInfrastructures().Where(a => a.Resources.Any());
@@ -38,7 +38,7 @@ namespace Terragate.Api.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost(Name = "CreateInfrastructure")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(IFormFile[] files)

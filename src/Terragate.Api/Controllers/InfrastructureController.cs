@@ -27,7 +27,7 @@ namespace Terragate.Api.Controllers
         /// </summary>
         /// <param name="id">The id of infrastructure to get</param>
         /// <returns>Requested infrastructure</returns>
-        [HttpGet]
+        [HttpGet(Name = "GetInfrastructure")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -54,7 +54,7 @@ namespace Terragate.Api.Controllers
         /// </summary>
         /// <param name="id">The id of the infrastrucutre to refresh</param>
         /// <returns>Refreshed infrastrucutre</returns>
-        [HttpPut()]
+        [HttpPut(Name = "RefreshInfrastructure")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -82,11 +82,11 @@ namespace Terragate.Api.Controllers
 
 
         /// <summary>
-        /// Destroy the deployment 
+        /// Destroy the infrastrucure 
         /// </summary>
         /// <param name="id">The id of the deployment to destroy</param>
         /// <returns>Refreshed deployment</returns>
-        [HttpDelete()]
+        [HttpDelete(Name = "DestroyInfrastructure")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -1,6 +1,7 @@
 using AutoMapper;
 using Serilog;
 using Serilog.Events;
+using System.Reflection;
 using Terragate.Api.Services;
 
 // Create web application builder
@@ -16,8 +17,9 @@ var logger = new LoggerConfiguration()
     .ForContext<Program>();
 
 // Log application version
-var health = new HealthService().GetHealthInfo();
-logger.Information($"Starting {health.ServiceName} {{version:l}}", health.ServiceVersion);
+var assembly = Assembly.GetExecutingAssembly();
+var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+logger.Information("Starting {name:l} {version:l}", assembly.GetName().Name, version);
 
 // Use serilog for web hosting
 builder.Host.UseSerilog(logger);
