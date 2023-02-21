@@ -55,6 +55,12 @@ namespace Terragate.Api.Controllers
                 
                 infra = _repository.GetInfrastructure(infra.Id);
 
+                if (!infra.Resources.Any())
+                {
+                    _repository.DeleteInfrastructure(infra.Id);
+                    throw new TerraformException("Terraform completed successfully but no infrastructure was created.");
+                }
+
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
             }
             catch (Exception ex)
