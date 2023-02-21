@@ -58,7 +58,7 @@ namespace Terragate.Api.Controllers
                 if (!infra.Resources.Any())
                 {
                     _repository.DeleteInfrastructure(infra.Id);
-                    throw new TerraformException("Terraform completed successfully but no infrastructure was created.");
+                    throw new TerraformException("Terraform completed successfully but no resourcre waw created.");
                 }
 
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
