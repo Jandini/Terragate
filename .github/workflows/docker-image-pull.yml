@@ -1,7 +1,7 @@
-name: Docker Image CI
+name: Docker Image CI for Pull Request
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
 
 env:
@@ -39,5 +39,5 @@ jobs:
         context: .
         file: ./Dockerfile.production
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/terragate:latest, ${{ secrets.DOCKERHUB_USERNAME }}/terragate:${{ env.GitVersion_SemVer }}
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/terragate:${{ env.GitVersion_SemVer }}
         

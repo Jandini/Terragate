@@ -39,19 +39,13 @@ namespace Terragate.Api.Services
         }
 
 
-        private DirectoryInfo GetInfrastructureDir(Guid? id)
+        private DirectoryInfo GetInfrastructureDir(Guid id)
         {           
-            if (!id.HasValue)
-                throw new ArgumentNullException(nameof(id));
-
-            return new(Path.Combine(_root.FullName, id!.ToString()));
+            return new(Path.Combine(_root.FullName, id.ToString()));
         }
 
-        public ITerraformInfrastructure GetInfrastructure(Guid? id)
+        public ITerraformInfrastructure GetInfrastructure(Guid id)
         {
-            if (id == null)
-                throw new ArgumentNullException(nameof(id));
-
             var dir = GetInfrastructureDir(id);
 
             if (!dir.Exists)
@@ -165,7 +159,7 @@ namespace Terragate.Api.Services
         }
 
 
-        public void DeleteInfrastructure(Guid? id)
+        public void DeleteInfrastructure(Guid id)
         {
             var dir = GetInfrastructureDir(id);
             dir.Delete(true);

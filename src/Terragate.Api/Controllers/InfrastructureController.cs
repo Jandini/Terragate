@@ -31,7 +31,7 @@ namespace Terragate.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<InfrastructureDto> Get(Guid? id)
+        public ActionResult<InfrastructureDto> Get(Guid id)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Terragate.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Refresh(Guid? id)
+        public async Task<IActionResult> Refresh(Guid id)
         {           
             try
             {
@@ -90,7 +90,7 @@ namespace Terragate.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Destroy(Guid? id)
+        public async Task<IActionResult> Destroy(Guid id)
         {
             try
             {
