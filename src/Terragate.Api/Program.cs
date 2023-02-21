@@ -25,7 +25,9 @@ logger.Information("Starting {name:l} {version:l}", assembly.GetName().Name, ver
 builder.Host.UseSerilog(logger);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    // Suppress ProblemDetails schema
+    .ConfigureApiBehaviorOptions(o => o.SuppressMapClientErrors = true);
 
 // Add terraform services
 builder.Services.AddTerraform(builder.Configuration);
