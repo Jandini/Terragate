@@ -20,7 +20,7 @@ namespace Terragate.Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetHealthInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<TerragateHealthInfoDto> GetHealthInfo()

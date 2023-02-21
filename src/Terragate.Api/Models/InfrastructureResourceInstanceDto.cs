@@ -13,7 +13,5 @@ namespace Terragate.Api.Models
         public int Cpu { get; set; }        
         public int Memory { get; set; }
         public int Storage { get; set; }
-
-
     }
 }
