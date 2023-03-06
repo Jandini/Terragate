@@ -1,12 +1,6 @@
-# Do not display "Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them"
-$env:DOCKER_SCAN_SUGGEST="false"
-
-# Use dotnet git version to retrive semantic version
-$global:gitVersion=$(dotnet gitversion /showvariable SemVer)
-
-
 & docker version *> $null
 if ($LASTEXITCODE -ne 0) {
+
     # In some of my development machines I don't have docker desktop running all the time. 
     # This script is resposible for spinning up docker desktop if not already running.
     # Uncheck "Open Docker Dashboard at startup" in "General" docker desktop settings 
@@ -56,10 +50,3 @@ if ($LASTEXITCODE -ne 0) {
         Write-Host .
     }    
 }
-
-Write-Host "Branch version $global:gitVersion"
-
-# Create variables for image tags 
-$imageName="jandini/terragate"
-$global:currentTag="$($imageName):$global:gitVersion"
-$global:latestTag="$($imageName):latest"
