@@ -1,6 +1,6 @@
 # The script is passing TF_VAR_VRA_USER and TF_VAR_VRA_PASS into the container from your local envrionment.
 
-& .init.ps1
+.\service-init.ps1
 
 dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained -p:OutputType=Exe -p:DebugOutput=None src\Terragate.sln
 if ($LASTEXITCODE -ne 0) {
