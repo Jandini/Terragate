@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using System.Reflection;
@@ -19,7 +20,9 @@ var logger = new LoggerConfiguration()
 // Log application version
 var assembly = Assembly.GetExecutingAssembly();
 var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-logger.Information("Starting {name:l} {version:l}", assembly.GetName().Name, version);
+var name = builder.Configuration.GetValue<string>("Service:Name") ?? assembly.GetName().Name;
+
+logger.Information("Starting {name:l} {version:l}", name, version);
 
 // Use serilog for web hosting
 builder.Host.UseSerilog(logger);
@@ -40,9 +43,16 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(
     // Get rid of Dto postfix 
-    options => options.CustomSchemaIds((type) => type.Name.EndsWith("Dto") 
-        ? type.Name[..^3] 
-        : type.Name));
+    options => {
+        options.CustomSchemaIds((type) => type.Name.EndsWith("Dto")
+            ? type.Name[..^3]
+            : type.Name);
+
+        options.SwaggerDoc("v1", new OpenApiInfo()
+        {
+            Title = name
+        });        
+    });
 
 // Add AutoMapper service
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -58,9 +68,9 @@ app.Services.GetRequiredService<IMapper>().ConfigurationProvider.AssertConfigura
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {        
-    logger.Warning($"Adding swagger http://[::]80/swagger/index.html");
+    logger.Warning($"Adding swagger");
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI( options => options.DocumentTitle = name);
 
     // Show environment variables 
     if (logger.IsEnabled(LogEventLevel.Debug))
