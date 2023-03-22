@@ -13,16 +13,15 @@ namespace Terragate.Api.Services
 
         public HealthInfo GetHealthInfo()
         {
-
             var assembly = Assembly.GetExecutingAssembly();
-            var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-            var name = assembly.GetName().Name;
+            var appVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            var appName = assembly.GetName().Name;
 
             var info = new HealthInfo
             {
-                ServiceName = _configuration.GetValue<string>("Service:Name") ?? name,
-                ServiceVersion = _configuration.GetValue<string>("Service:Version") ?? version,
-                ServiceStatus = !string.IsNullOrEmpty(_configuration.GetValue<string>("Service:Version")) ? $"Running on {name} {version}" : "Running",
+                ServiceName = _configuration.GetValue("App:Name", appName),
+                ServiceVersion = _configuration.GetValue("App:Version", appVersion),
+                ServiceStatus = !string.IsNullOrEmpty(_configuration.GetValue<string>("App:Version")) ? $"Running on {appName} {appVersion}" : "Running",
             };
 
             return info;
