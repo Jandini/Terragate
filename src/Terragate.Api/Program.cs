@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using Serilog.Sinks.Elasticsearch;
 using System.Reflection;
 using Terragate.Api.Services;
 
@@ -11,18 +12,30 @@ var builder = WebApplication.CreateBuilder(args);
 // Alter configuration with environment variables
 builder.Configuration.AddEnvironmentVariables();
 
+// Get application name and version. Override application name through appsettings.json or environment varialbe App:Name or APP__NAME
+var appName = builder.Configuration.GetValue("App:Name", builder.Environment.ApplicationName);
+var appVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+
+var elasticOptions = new ElasticsearchSinkOptions(builder.Configuration.GetValue<Uri>("Elasticsearch:Uri"))
+{
+    IndexFormat = $"{appName!.ToLower()}-logs-{builder.Environment.EnvironmentName.ToLower()}-{DateTime.UtcNow:yyyy-MM}".Replace(".", "-"),
+    AutoRegisterTemplate = true
+};
+
 // Create serilog logger
 var logger = new LoggerConfiguration()
+    .WriteTo.Elasticsearch(elasticOptions)
+    .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
+    .Enrich.WithProperty("Application", appName)
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger()
     .ForContext<Program>();
 
-// Log application version
-var assembly = Assembly.GetExecutingAssembly();
-var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-var name = builder.Configuration.GetValue<string>("Service:Name") ?? assembly.GetName().Name;
 
-logger.Information("Starting {name:l} {version:l}", name, version);
+
+
+logger.Information("Starting {appName:l} {appVersion:l}", appName, appVersion);
 
 // Use serilog for web hosting
 builder.Host.UseSerilog(logger);
@@ -50,7 +63,7 @@ builder.Services.AddSwaggerGen(
 
         options.SwaggerDoc("v1", new OpenApiInfo()
         {
-            Title = name
+            Title = appName
         });        
     });
 
@@ -70,7 +83,7 @@ if (app.Environment.IsDevelopment())
 {        
     logger.Warning($"Adding swagger");
     app.UseSwagger();
-    app.UseSwaggerUI( options => options.DocumentTitle = name);
+    app.UseSwaggerUI( options => options.DocumentTitle = appName);
 
     // Show environment variables 
     if (logger.IsEnabled(LogEventLevel.Debug))
