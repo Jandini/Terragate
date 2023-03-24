@@ -7,7 +7,7 @@ namespace Terragate.Api.Services
     {
         const string TERRAFORM_STATE_FILE = "terraform.tfstate";
         const string TERRAFORM_STATE_LOCK_FILE = "terraform.tfstate.lock.info";
-        
+
         private readonly ILogger<TerraformInfrastructureRepository> _logger;
         private readonly DirectoryInfo _root;
         private readonly IMapper _mapper;
@@ -24,15 +24,15 @@ namespace Terragate.Api.Services
             {
                 _logger.LogDebug("Creating {root} directory", _root.FullName);
                 _root.Create();
-            }           
+            }
         }
 
         public IEnumerable<ITerraformInfrastructure> GetInfrastructures()
-        {          
-            var infrastructures = _root.GetDirectories("????????-????-????-????-????????????")               
-               .Where(infraDir => new FileInfo(Path.Combine(infraDir.FullName, TERRAFORM_STATE_FILE)).Exists 
-                    && !new FileInfo(Path.Combine(infraDir.FullName, TERRAFORM_STATE_LOCK_FILE)).Exists)               
-               .Select(infraDir => new TerraformInfrastructure(infraDir, this) )
+        {
+            var infrastructures = _root.GetDirectories("????????-????-????-????-????????????")
+               .Where(infraDir => new FileInfo(Path.Combine(infraDir.FullName, TERRAFORM_STATE_FILE)).Exists
+                    && !new FileInfo(Path.Combine(infraDir.FullName, TERRAFORM_STATE_LOCK_FILE)).Exists)
+               .Select(infraDir => new TerraformInfrastructure(infraDir, this))
                .ToArray();
 
             return infrastructures;
@@ -40,7 +40,7 @@ namespace Terragate.Api.Services
 
 
         private DirectoryInfo GetInfrastructureDir(Guid id)
-        {           
+        {
             return new(Path.Combine(_root.FullName, id.ToString()));
         }
 
@@ -62,7 +62,7 @@ namespace Terragate.Api.Services
                 throw new FileNotFoundException(state.Name);
             }
 
-            return new TerraformInfrastructure(dir, this); 
+            return new TerraformInfrastructure(dir, this);
         }
 
 
@@ -75,11 +75,11 @@ namespace Terragate.Api.Services
         {
             var resources = new List<ITerraformInfrastructureResource>();
             var file = Path.Combine(infraDir.FullName, TERRAFORM_STATE_FILE);
-           
+
             try
             {
                 var json = File.ReadAllText(file);
-                TerraformState? terraformState = JsonSerializer.Deserialize<TerraformState>(json);                
+                TerraformState? terraformState = JsonSerializer.Deserialize<TerraformState>(json);
 
                 if (terraformState != null && terraformState.Resources != null)
                 {
@@ -117,7 +117,7 @@ namespace Terragate.Api.Services
                             }
                         }
                     }
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -129,7 +129,7 @@ namespace Terragate.Api.Services
 
 
         public async Task AddTemplates(DirectoryInfo templates, ITerraformInfrastructure infra)
-        {           
+        {
             foreach (var file in templates.GetFiles())
             {
                 _logger.LogWarning("Adding template {file}", file.Name);
@@ -144,18 +144,18 @@ namespace Terragate.Api.Services
         {
             var id = Guid.NewGuid();
             var dir = _root.CreateSubdirectory(id.ToString());
-            var infrastructure = new TerraformInfrastructure(dir);         
+            var infrastructure = new TerraformInfrastructure(dir);
 
             foreach (var file in terraformFiles)
             {
                 var path = Path.Combine(infrastructure.WorkingDirectory.FullName, file.FileName);
-                
+
                 _logger.LogDebug("Creating file {path}", Path.Combine(dir.FullName, file.FileName));
                 using var stream = new FileStream(path, FileMode.Create);
                 await file.CopyToAsync(stream);
             }
 
-            return infrastructure; 
+            return infrastructure;
         }
 
 
