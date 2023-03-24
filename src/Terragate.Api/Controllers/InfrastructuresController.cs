@@ -64,13 +64,12 @@ namespace Terragate.Api.Controllers
                 
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (infra != null)
                     _repository.DeleteInfrastructure(infra.Id);
 
-                _logger.LogError(ex, "Create infrastructure failed.");
-                return BadRequest(ex.Message);
+                throw;
             }            
         }
     }

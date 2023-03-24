@@ -22,24 +22,16 @@ namespace Terragate.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{unhandledExceptionMethod} {unhandledExceptionUrl}", 
+                _logger.LogError(ex, "{controller} {requestMethod} {requestUrl}",
+                    context.GetRouteData().Values["controller"],
                     context.Request.Method, 
                     context.Request.GetDisplayUrl());
 
-                await HandleExceptionAsync(context, ex);
+                context.Response.ContentType = MediaTypeNames.Text.Plain;
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+                await context.Response.WriteAsync(ex.Message);
             }
-        }
-        
-        private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
-        {
-            context.Response.ContentType = MediaTypeNames.Application.Json;
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            
-            await context.Response.WriteAsJsonAsync(new 
-            {
-                context.Response.StatusCode,
-                exception.Message
-            });
-        }
+        }             
     }
 }
