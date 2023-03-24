@@ -18,7 +18,7 @@ namespace Terragate.Api.Services
 
             public string? GetValue()
             {
-                if (string.IsNullOrEmpty(Value)) 
+                if (string.IsNullOrEmpty(Value))
                     return Value;
 
                 return Type switch
@@ -30,10 +30,10 @@ namespace Terragate.Api.Services
             }
         }
 
-        public class TerraformVariables : List<TerraformVariable> 
-        { 
+        public class TerraformVariables : List<TerraformVariable>
+        {
 
-        }      
+        }
 
         /// <summary>
         /// Enable or disable data/plugins cache directory 
@@ -98,7 +98,7 @@ namespace Terragate.Api.Services
         ///       "Value": ""
         ///     }
         /// ]        
-        public TerraformVariables? Variables { get; set; } 
+        public TerraformVariables? Variables { get; set; }
 
     }
 }

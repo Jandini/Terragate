@@ -41,11 +41,7 @@ namespace Terragate.Api.Controllers
             catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
             {
                 return NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            }         
         }
 
 
@@ -72,11 +68,7 @@ namespace Terragate.Api.Controllers
             catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
             {                
                 return NotFound();                
-            }
-            catch (Exception ex)
-            {                
-                return BadRequest(ex.Message);
-            }
+            }           
         }
 
 
@@ -105,11 +97,7 @@ namespace Terragate.Api.Controllers
             catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
             {
                 return NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }            
+            }          
         }
     }
 }

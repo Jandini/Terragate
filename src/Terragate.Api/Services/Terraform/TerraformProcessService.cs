@@ -18,7 +18,7 @@ namespace Terragate.Api.Services
             const string NAME = "terraform";
 
             _logger.LogDebug("Starting {terraform:l} {args:l} in {dir}", NAME, arguments, workingDirectory);
-            
+
             using var process = new Process();
             StringBuilder errors = new();
 
@@ -28,7 +28,7 @@ namespace Terragate.Api.Services
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.WorkingDirectory = workingDirectory?.FullName;
-            
+
             process.OutputDataReceived += (sender, args) =>
             {
                 if (!string.IsNullOrEmpty(args.Data))
@@ -55,16 +55,16 @@ namespace Terragate.Api.Services
                 _logger.LogDebug("Terraform process finished with exit code {ExitCode}", process.ExitCode);
 
                 if (process.ExitCode != 0)
-                {                    
-                    throw errors.Length > 0 
-                        ? new TerraformException(errors.ToString()) 
+                {
+                    throw errors.Length > 0
+                        ? new TerraformException(errors.ToString())
                         : new TerraformException($"Terraform {arguments} failed with exit code {process.ExitCode}.");
                 }
             }
             else
             {
                 throw new TerraformException("Terraform process failed to start.");
-            }                            
-        }     
+            }
+        }
     }
 }

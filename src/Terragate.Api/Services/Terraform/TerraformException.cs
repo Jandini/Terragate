@@ -2,9 +2,9 @@
 {
     public class TerraformException : Exception
     {
-        public TerraformException(string message) : base(message) 
+        public TerraformException(string message) : base(message)
         {
-     
+
         }
     }
 }

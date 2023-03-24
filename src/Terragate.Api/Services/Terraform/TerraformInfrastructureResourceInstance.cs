@@ -3,8 +3,8 @@
     public class TerraformInfrastructureResourceInstance : ITerraformInfrastructureResourceInstance
     {
 
-        public string? HostName { get; set; }        
-        public string? IpAddress { get; set; }        
+        public string? HostName { get; set; }
+        public string? IpAddress { get; set; }
         public string? CatalogItemName { get; set; }
         public DateTime ExpiryDate { get; set; }
         public DateTime CreatedDate { get; set; }

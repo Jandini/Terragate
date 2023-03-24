@@ -28,6 +28,7 @@ namespace Terragate.Api.Controllers
         [HttpGet(Name = "GetInfrastructures")]
         public ActionResult<IEnumerable<InfrastructureDto>> Get()
         {
+            _logger.LogInformation("Get infrastructures");
             var infrastructures = _repository.GetInfrastructures().Where(a => a.Resources.Any());
             var results = _mapper.Map<IEnumerable<InfrastructureDto>>(infrastructures);
 
@@ -43,9 +44,12 @@ namespace Terragate.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(IFormFile[] files)
         {
+            ITerraformInfrastructure? infra = null;
+
             try
             {
-                var infra = await _repository.AddInfrastructure(files);
+                _logger.LogInformation("Create infrastructure from {terraformFiles}", files.Select(a => a.FileName));
+                infra = await _repository.AddInfrastructure(files);
 
                 if (_config.UseTemplates(out var templates))
                     await _repository.AddTemplates(templates, infra);
@@ -55,17 +59,17 @@ namespace Terragate.Api.Controllers
                 
                 infra = _repository.GetInfrastructure(infra.Id);
 
-                if (!infra.Resources.Any())
-                {
-                    _repository.DeleteInfrastructure(infra.Id);
+                if (!infra.Resources.Any())                                    
                     throw new TerraformException("Terraform completed successfully but no resourcre waw created.");
-                }
-
+                
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
             }
-            catch (Exception ex)
-            {               
-                return BadRequest(ex.Message);
+            catch (Exception)
+            {
+                if (infra != null)
+                    _repository.DeleteInfrastructure(infra.Id);
+
+                throw;
             }            
         }
     }

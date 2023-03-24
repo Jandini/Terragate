@@ -4,6 +4,6 @@
     {
         Guid Id { get; }
         DirectoryInfo WorkingDirectory { get; }
-        IEnumerable<ITerraformInfrastructureResource> Resources { get; }        
+        IEnumerable<ITerraformInfrastructureResource> Resources { get; }
     }
 }

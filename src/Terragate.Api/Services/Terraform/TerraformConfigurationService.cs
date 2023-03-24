@@ -8,21 +8,21 @@
 
         public TerraformConfigurationService(ILogger<TerraformConfigurationService> logger, IConfiguration config)
         {
-            _logger = logger;            
+            _logger = logger;
             _config = config;
             _terra = GetTerraformConfig();
         }
-   
+
 
         public DirectoryInfo GetTemplatesDir()
         {
-           return new DirectoryInfo(_terra.TemplatesPath);
+            return new DirectoryInfo(_terra.TemplatesPath);
         }
 
         public TerraformConfiguration GetTerraformConfig()
         {
             var config = _config.GetSection("Terraform").Get<TerraformConfiguration>();
-                
+
             if (config == null)
             {
                 _logger.LogWarning("Terraform section in configuration is missing. Using default configuration.");

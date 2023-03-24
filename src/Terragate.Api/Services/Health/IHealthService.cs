@@ -2,6 +2,6 @@
 {
     public interface IHealthService
     {
-        HealthInfo GetHealthInfo();
+        Task<HealthInfo> GetHealthInfoAsync();
     }
 }
