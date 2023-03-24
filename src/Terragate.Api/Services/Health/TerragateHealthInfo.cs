@@ -1,6 +1,6 @@
-﻿namespace Terragate.Api.Models
+﻿namespace Terragate.Api.Services
 {
-    public class TerragateHealthInfoDto
+    public class TerragateHealthInfo
     {
         public string? Name { get; set; }
         public string? Version { get; set; }

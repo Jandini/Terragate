@@ -6,7 +6,10 @@ namespace Terragate.Api.Profiles
     {
         public HealthProfile() 
         {
-            CreateMap<Services.HealthInfo, Models.TerragateHealthInfoDto>();
+            CreateMap<Services.ElasticHealthVersion, Models.ElasticHealthVersionDto>();
+            CreateMap<Services.ElasticHealthInfo, Models.ElasticHealthInfoDto>();
+            CreateMap<Services.TerragateHealthInfo, Models.TerragateHealthInfoDto>();
+            CreateMap<Services.HealthInfo, Models.HealthInfoDto>();
         }
     }
 }
