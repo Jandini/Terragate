@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Terragate.Api.Controllers;
 
 namespace Terragate.Api.Services
 {
@@ -20,7 +19,6 @@ namespace Terragate.Api.Services
 
         public async Task<HealthInfo> GetHealthInfoAsync()
         {
-
             _logger.LogInformation("Getting elasticsearch health info");
 
             ElasticHealthInfo? elasticHealthInfo;
@@ -37,7 +35,6 @@ namespace Terragate.Api.Services
                 elasticHealthInfo = new ElasticHealthInfo() { Uri = ex.Message };
             }
 
-
             _logger.LogInformation("Getting terragate health info");
 
             var assembly = Assembly.GetExecutingAssembly();
@@ -51,9 +48,8 @@ namespace Terragate.Api.Services
                     Name = _settings.ApplicationName ?? appName,
                     Version = _settings.ApplicationVersion ?? appVersion,
                     Status = !string.IsNullOrEmpty(_settings.ApplicationVersion) ? $"Running on {appName} {appVersion}" : "Running",
-                },
-
-                Elastic = elasticHealthInfo                
+                    Elastic = elasticHealthInfo
+                },                
             };
 
             return await Task.FromResult(healthInfo);

@@ -27,7 +27,7 @@ var elasticOptions = new ElasticsearchSinkOptions(appSettings.ElasticsearchUri)
 {
     // Elasticsearch index format must not be longer than 255 character. 
     // https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
-    IndexFormat = Regex.Replace($"{appName}-logs-{builder.Environment.EnvironmentName}-{DateTime.UtcNow:yyyy-MM}".ToLower(), "[\\\\/\\*\\?\"<>\\|# ]", "-"),
+    IndexFormat = Regex.Replace($"{appName}-logs-{builder.Environment.EnvironmentName}-{DateTime.UtcNow:yyyy-MM}".ToLower(), "[\\\\/\\*\\?\"<>\\|#., ]", "-"),
     AutoRegisterTemplate = true,
     // Set environemnt variable ELASTICSEARCH_DEBUG=true do debug elasticsearch logging
     ModifyConnectionSettings = !appSettings.ElasticsearchDebug ? null : config => config.OnRequestCompleted(d => Console.WriteLine(d.DebugInformation)) 
@@ -38,7 +38,8 @@ var elasticOptions = new ElasticsearchSinkOptions(appSettings.ElasticsearchUri)
 var logger = new LoggerConfiguration()
     .WriteTo.Elasticsearch(elasticOptions)
     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-    .Enrich.WithProperty("Application", appName)
+    .Enrich.WithProperty("AppName", appName)
+    .Enrich.WithProperty("AppVersion", appVersion!)
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger()
     .ForContext<Program>();

@@ -2,7 +2,6 @@
 {
     public class HealthInfo
     {
-        public TerragateHealthInfo? Terragate { get; set; }
-        public ElasticHealthInfo? Elastic { get; set; }
+        public TerragateHealthInfo? Terragate { get; set; }        
     }
 }
