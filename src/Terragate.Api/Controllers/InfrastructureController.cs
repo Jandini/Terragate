@@ -88,7 +88,7 @@ namespace Terragate.Api.Controllers
             {
                 var deployment = _repository.GetInfrastructure(id);
                 await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);
-                await _terraform.StartAsync("destroy -input=false -auto-approve", deployment.WorkingDirectory);
+                await _terraform.StartAsync("destroy -no-color -input=false -auto-approve", deployment.WorkingDirectory);
 
                 _repository.DeleteInfrastructure(id);
                 
