@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
+﻿using Microsoft.AspNetCore.Mvc.Controllers;
 using System.Net;
 using System.Net.Mime;
 
@@ -22,16 +22,13 @@ namespace Terragate.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{controller} {requestMethod} {requestUrl}",
-                    context.GetRouteData().Values["controller"],
-                    context.Request.Method, 
-                    context.Request.GetDisplayUrl());
+                var description = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
+                _logger.LogError(ex, "Unhandled exception in {unhandledExceptionThrownBy}", description?.DisplayName);
 
                 context.Response.ContentType = MediaTypeNames.Text.Plain;
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
                 await context.Response.WriteAsync(ex.Message);
             }
-        }             
+        }
     }
 }
