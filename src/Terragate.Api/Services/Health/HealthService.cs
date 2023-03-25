@@ -28,11 +28,20 @@ namespace Terragate.Api.Services
                 var response = await _elasticClient.GetAsync("/");
                 response.EnsureSuccessStatusCode();
                 elasticHealthInfo = await response.Content.ReadFromJsonAsync<ElasticHealthInfo>();
-                elasticHealthInfo!.Uri = _settings.ElasticsearchUri?.ToString();
+
+                if (elasticHealthInfo == null)
+                    throw new Exception("Respose is empty");
+
+                elasticHealthInfo.Status = elasticHealthInfo.Tagline;
+                elasticHealthInfo.Uri = _settings.ElasticsearchUri?.ToString();
             }
             catch (Exception ex)
             {
-                elasticHealthInfo = new ElasticHealthInfo() { Uri = ex.Message };
+                elasticHealthInfo = new ElasticHealthInfo()
+                {
+                    Status = ex.Message,
+                    Uri = _settings.ElasticsearchUri?.ToString()
+                };
             }
 
             _logger.LogInformation("Getting terragate health info");
