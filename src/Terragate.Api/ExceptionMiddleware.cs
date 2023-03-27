@@ -23,7 +23,7 @@ namespace Terragate.Api
             catch (Exception ex)
             {
                 var description = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
-                _logger.LogError(ex, "Unhandled exception in {unhandledExceptionThrownBy}", description?.DisplayName);
+                _logger.LogError(ex, "Unhandled exception in {UnhandledExceptionThrownBy}", description?.DisplayName);
 
                 context.Response.ContentType = MediaTypeNames.Text.Plain;
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
