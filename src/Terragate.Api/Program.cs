@@ -1,125 +1,111 @@
+// Created with JandaBox http://github.com/Jandini/JandaBox
 using AutoMapper;
-using Microsoft.OpenApi.Models;
 using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.Elasticsearch;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using Terragate.Api;
 using Terragate.Api.Services;
+using System.Reflection;
+using Microsoft.OpenApi.Models;
+using Serilog.Sinks.Elasticsearch;
+using System.Text.RegularExpressions;
 
 // Create web application builder
 var builder = WebApplication.CreateBuilder(args);
 
-// Alter configuration with environment variables
+// Read configuration from environment variables
 builder.Configuration.AddEnvironmentVariables();
 
-// Get application settings
-var appSettings = builder.Configuration.Get<AppSettings>()!;
-builder.Services.AddSingleton(appSettings);
+// Log application name and version
+var appName = builder.Configuration.GetValue("APPLICATION_NAME", builder.Environment.ApplicationName);
+var appVersion = builder.Configuration.GetValue("APPLICATION_VERSION", Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
 
-
-// Application name and version can be overridden by APPLICATION_NAME and APPLICATION_VERSION environment variables.
-var appName = appSettings.ApplicationName ?? builder.Environment.ApplicationName;
-var appVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-
-var elasticOptions = new ElasticsearchSinkOptions(appSettings.ElasticsearchUri)
+// Create elasticserach logging options
+var elasticOptions = new ElasticsearchSinkOptions(builder.Configuration.GetValue<Uri>("ELASTICSEARCH_URI"))
 {
-    // Elasticsearch index format must not be longer than 255 character. 
-    // https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+    // Ensure index name meet the following criteria https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
     IndexFormat = Regex.Replace($"{appName}-logs-{builder.Environment.EnvironmentName}-{DateTime.UtcNow:yyyy-MM}".ToLower(), "[\\\\/\\*\\?\"<>\\|#., ]", "-"),
     AutoRegisterTemplate = true,
     // Set environemnt variable ELASTICSEARCH_DEBUG=true do debug elasticsearch logging
-    ModifyConnectionSettings = !appSettings.ElasticsearchDebug ? null : config => config.OnRequestCompleted(d => Console.WriteLine(d.DebugInformation)) 
+    ModifyConnectionSettings = !builder.Configuration.GetValue("ELASTICSEARCH_DEBUG", false) ? null : config => config.OnRequestCompleted(d => Console.WriteLine(d.DebugInformation))
 };
 
+// Elasticsearch index name must not be longer than 255 characters
+if (elasticOptions.IndexFormat.Length > 255)
+    throw new Exception("Elasticsearch index name exceeds 255 characters.");
 
 // Create serilog logger
 var logger = new LoggerConfiguration()
     .WriteTo.Elasticsearch(elasticOptions)
     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-    .Enrich.WithProperty("AppName", appName)
-    .Enrich.WithProperty("AppVersion", appVersion!)
+    .Enrich.WithProperty("ApplicationName", appName!)
+    .Enrich.WithProperty("ApplicationVersion", appVersion!)
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger()
     .ForContext<Program>();
 
+logger.Information($"Starting {appName} {appVersion}");
+logger.Debug($"Logging [{string.Join(",", elasticOptions.ConnectionPool.Nodes.Select(a => a.Uri))}] {elasticOptions.IndexFormat}");
 
-logger.Information("Starting {appName} {appVersion}", appName, appVersion);
-
-if (appSettings.ElasticsearchUri != null)
-{
-    logger.Information("Elasticsearch logging: {elasticsearchUri}", appSettings.ElasticsearchUri);
-    logger.Information("Elasticsearch pattern: {indexFormat}", elasticOptions.IndexFormat);
-
-    if (elasticOptions.IndexFormat.Length > 255)
-        throw new Exception("Elasticsearch index format exceeds 255 characters.");
-}
-else
-    logger.Warning("Elasticsearch logging not configured");
+if (!elasticOptions.ConnectionPool.Nodes.Any())
+    logger.Warning("Elasticsearch is not configured");
 
 // Use serilog for web hosting
 builder.Host.UseSerilog(logger);
 
+// Add terraform services
+builder.Services.AddTerraform(builder.Configuration);
+
 // Add services to the container
+builder.Services.AddHealth();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// Add controllers
 builder.Services.AddControllers()
     // Suppress ProblemDetails schema
     .ConfigureApiBehaviorOptions(o => o.SuppressMapClientErrors = true);
 
-// Add terraform services
-builder.Services.AddTerraform(builder.Configuration);
+// Add http client
+builder.Services.AddHttpClient();
 
-// Add health service
-builder.Services.AddHealth();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen(
+builder.Services.AddSwaggerGen(options =>
+{
     // Get rid of Dto postfix 
-    options => {
-        options.CustomSchemaIds((type) => type.Name.EndsWith("Dto")
-            ? type.Name[..^3]
-            : type.Name);
+    options.CustomSchemaIds((type) => type.Name.EndsWith("Dto")
+        ? type.Name[..^3]
+        : type.Name);
 
-        options.SwaggerDoc("v1", new OpenApiInfo()
-        {
-            Title = appName
-        });        
+    // Update application title on Swagger UI web page for v1
+    options.SwaggerDoc("v1", new OpenApiInfo()
+    {
+        Title = appName
     });
+});
 
-// Add AutoMapper service
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-// Add HttpClient service
-builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-
 #if (DEBUG)
-// Assert mapper configuration only in DEBUG 
+// Assert mapper configuration 
 app.Services.GetRequiredService<IMapper>().ConfigurationProvider.AssertConfigurationIsValid();
+
+// Log all environment variables in DEBUG mode only
+var variables = Environment.GetEnvironmentVariables();
+logger.ForContext(typeof(Environment)).Debug(string.Join(Environment.NewLine, variables.Keys.Cast<string>().Order().Select(key => $"{key}={variables[key]}")));
 #endif
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{        
-    logger.Warning($"Adding swagger UI");
+if (!app.Environment.IsProduction())
+{
+    logger.Warning("Adding swagger UI");
     app.UseSwagger();
-    app.UseSwaggerUI( options => options.DocumentTitle = appName);
-
-    // Show environment variables 
-    if (logger.IsEnabled(LogEventLevel.Debug))
-    {
-        var variables = Environment.GetEnvironmentVariables();
-        foreach (var key in variables.Keys.Cast<string>().Order())
-            logger.ForContext(typeof(Environment)).Debug("{key}={value}", key, variables[key]);
-    }
+    // Update html document title in swagger UI
+    app.UseSwaggerUI(options => options.DocumentTitle = appName);
 }
 
+// Unhandled exception middleware
 app.UseMiddleware<ExceptionMiddleware>();
-
 app.UseTerraform();
 
 app.UseHttpsRedirection();
