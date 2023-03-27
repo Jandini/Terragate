@@ -5,14 +5,13 @@ Simple gateway API for terraform command line tool.
 
 
 
-## Run 
+## Quick start
 
-Start the container with Terragate.
+Start docker container with Terragate.
 
 ```sh
 docker run -d -p 80:80 jandini/terragate
 ```
-
 
 
 
@@ -43,8 +42,12 @@ You can customize the image...
 * Configure variables 
 
   ```dockerfile
-  # Expose swagger interface
+  # Add Swagger UI
   ENV ASPNETCORE_ENVIRONMENT=Development
+  # Rename the application
+  ENV APPLICATION_NAME=MyTerragate
+  # Override application version
+  ENV APPLICATION_VERSION=1.2.3
   ```
 
 * Add your own `appsettings.json` configuration
@@ -57,4 +60,5 @@ You can customize the image...
   ​
 
   ​
-
+---
+Created from [JandaBox](https://github.com/Jandini/JandaBox)

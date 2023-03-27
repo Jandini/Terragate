@@ -2,7 +2,7 @@
 
 namespace Terragate.Api.Services
 {
-    public class ElasticHealthInfo
+    public class ElasticInfo
     {
         [JsonPropertyName("name")]
         public string? Name { get; set; }
@@ -14,7 +14,7 @@ namespace Terragate.Api.Services
         public string? ClusterUuid { get; set; }
 
         [JsonPropertyName("version")]
-        public ElasticHealthVersion? Version { get; set; }
+        public ElasticVersion? Version { get; set; }
 
         [JsonPropertyName("tagline")]
         public string? Tagline { get; set; }

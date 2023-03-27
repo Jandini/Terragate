@@ -1,67 +1,74 @@
 ﻿using System.Reflection;
+using System.Runtime;
 
 namespace Terragate.Api.Services
 {
     public class HealthService : IHealthService
     {
-        private readonly AppSettings _settings;
+        private readonly IConfiguration _configuration;
         private readonly HttpClient _elasticClient;
         private readonly ILogger<HealthService> _logger;
 
-        public HealthService(AppSettings settings, HttpClient elasticClient, ILogger<HealthService> logger)
+        public HealthService(IConfiguration configuration, ILogger<HealthService> logger, HttpClient elasticClient)
         {
-            _settings = settings;
-
-            _elasticClient = elasticClient;
-            _elasticClient.BaseAddress = settings.ElasticsearchUri;
+            _configuration = configuration;
             _logger = logger;
+            _elasticClient = elasticClient;
+            _elasticClient.BaseAddress = configuration.GetValue<Uri>("ELASTICSEARCH_URI");
         }
 
         public async Task<HealthInfo> GetHealthInfoAsync()
         {
-            _logger.LogInformation("Getting elasticsearch health info");
+            _logger.LogDebug("Getting Terragate info");
 
-            ElasticHealthInfo? elasticHealthInfo;
+            var appName = Assembly.GetExecutingAssembly().GetName().Name;
+            var appVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            var info = new HealthInfo
+            {
+                Terragate = new TerragateInfo()
+                {
+                    Name = _configuration.GetValue("APPLICATION_NAME", appName),
+                    Version = _configuration.GetValue("APPLICATION_VERSION", appVersion),
+                    Status = $"Running on {appName} {appVersion}",
+                    
+                },
+
+                Elastic = await GetElasticDetails()
+            };
+
+            return await Task.FromResult(info);
+        }
+
+
+        private async Task<ElasticInfo> GetElasticDetails()
+        {
+            _logger.LogDebug("Getting Elasticsearch info");
+
+            ElasticInfo? info;
 
             try
             {
                 var response = await _elasticClient.GetAsync("/");
                 response.EnsureSuccessStatusCode();
-                elasticHealthInfo = await response.Content.ReadFromJsonAsync<ElasticHealthInfo>();
+                info = await response.Content.ReadFromJsonAsync<ElasticInfo>();
 
-                if (elasticHealthInfo == null)
+                if (info == null)
                     throw new Exception("Respose is empty");
 
-                elasticHealthInfo.Status = elasticHealthInfo.Tagline;
-                elasticHealthInfo.Uri = _settings.ElasticsearchUri?.ToString();
+                info.Status = info.Tagline;
+                info.Uri = _elasticClient.BaseAddress?.AbsoluteUri ?? null;
             }
             catch (Exception ex)
             {
-                elasticHealthInfo = new ElasticHealthInfo()
+                info = new ElasticInfo()
                 {
                     Status = ex.Message,
-                    Uri = _settings.ElasticsearchUri?.ToString()
+                    Uri = _elasticClient.BaseAddress?.AbsoluteUri ?? null,
                 };
             }
 
-            _logger.LogInformation("Getting terragate health info");
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var appVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-            var appName = assembly.GetName().Name;
-
-            var healthInfo = new HealthInfo()
-            {
-                Terragate = new TerragateHealthInfo()
-                {
-                    Name = _settings.ApplicationName ?? appName,
-                    Version = _settings.ApplicationVersion ?? appVersion,
-                    Status = !string.IsNullOrEmpty(_settings.ApplicationVersion) ? $"Running on {appName} {appVersion}" : "Running",
-                    Elastic = elasticHealthInfo
-                },                
-            };
-
-            return await Task.FromResult(healthInfo);
+            return await Task.FromResult(info);
         }
     }
 }
