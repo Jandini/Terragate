@@ -4,8 +4,8 @@ EXPOSE 80
 EXPOSE 443
 
 # Add certificates for development purposes
-ADD res/*.crt /usr/local/share/ca-certificates/
-RUN update-ca-certificates
+ADD ./res/*.crt /usr/local/share/ca-certificates/
+# RUN update-ca-certificates
 
 # Install prerequisites
 RUN apt-get update && \
