@@ -14,11 +14,12 @@ namespace Terragate.Api.Services
             _configuration = configuration;
             _logger = logger;
             _elasticClient = elasticClient;
+            _elasticClient.BaseAddress = configuration.GetValue<Uri>("ELASTICSEARCH_URI");
         }
 
         public async Task<HealthInfo> GetHealthInfoAsync()
         {
-            _logger.LogDebug("Getting terragate health info");
+            _logger.LogDebug("Getting Terragate info");
 
             var appName = Assembly.GetExecutingAssembly().GetName().Name;
             var appVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
@@ -42,7 +43,7 @@ namespace Terragate.Api.Services
 
         private async Task<ElasticInfo> GetElasticDetails()
         {
-            _logger.LogDebug("Getting elasticsearch health info");
+            _logger.LogDebug("Getting Elasticsearch info");
 
             ElasticInfo? info;
 
