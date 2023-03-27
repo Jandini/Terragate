@@ -1,10 +1,10 @@
 ﻿namespace Terragate.Api.Services
 {
-    public class TerragateHealthInfo
+    public class TerragateInfo
     {
         public string? Name { get; set; }
         public string? Version { get; set; }
         public string? Status { get; set; }
-        public ElasticHealthInfo? Elastic { get; set; }
+        public ElasticInfo? Elastic { get; set; }
     }
 }

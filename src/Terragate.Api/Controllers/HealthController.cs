@@ -25,11 +25,9 @@ namespace Terragate.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<HealthInfoDto>> GetHealthInfoAsync()
         {
-            _logger.LogInformation("Getting health info");
+            _logger.LogDebug("Getting health info");
             var healthInfo = await _healthService.GetHealthInfoAsync();
-            _logger.LogInformation("{@TerragateHealth}", healthInfo);
-
             return Ok(_mapper.Map<HealthInfoDto>(healthInfo));
-        }             
+        }
     }
 }

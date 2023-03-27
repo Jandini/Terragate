@@ -2,7 +2,7 @@
 
 namespace Terragate.Api.Services
 {
-    public class ElasticHealthVersion
+    public class ElasticVersion
     {
         [JsonPropertyName("number")]
         public string? Number { get; set; }
