@@ -5,6 +5,5 @@
         public string? Name { get; set; }
         public string? Version { get; set; }
         public string? Status { get; set; }
-        public ElasticInfo? Elastic { get; set; }
     }
 }

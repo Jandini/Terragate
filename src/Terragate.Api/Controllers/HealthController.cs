@@ -5,7 +5,7 @@ using Terragate.Api.Services;
 
 namespace Terragate.Api.Controllers
 {
-    [ApiController]
+    [ApiController]    
     [Route("api/health")]
     public class HealthController : ControllerBase
     {
