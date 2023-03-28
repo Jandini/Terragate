@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime;
 
 namespace Terragate.Api.Services
 {
@@ -57,14 +56,12 @@ namespace Terragate.Api.Services
                     throw new Exception("Respose is empty");
 
                 info.Status = info.Tagline;
-                info.Uri = _elasticClient.BaseAddress?.AbsoluteUri ?? null;
             }
             catch (Exception ex)
             {
                 info = new ElasticInfo()
                 {
-                    Status = ex.Message,
-                    Uri = _elasticClient.BaseAddress?.AbsoluteUri ?? null,
+                    Status = ex.Message
                 };
             }
 

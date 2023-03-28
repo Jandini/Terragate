@@ -18,7 +18,6 @@ namespace Terragate.Api.Services
 
         [JsonPropertyName("tagline")]
         public string? Tagline { get; set; }
-        public string? Uri { get; set; }
         public string? Status { get; set; }
 
 
