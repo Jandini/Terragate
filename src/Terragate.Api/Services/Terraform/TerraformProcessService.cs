@@ -22,9 +22,10 @@ namespace Terragate.Api.Services
             {
                 if (buffer.Length > 0 && DateTime.UtcNow.Subtract(_timestamp).TotalMilliseconds > _timebuffer)
                 {
-                    _timestamp = DateTime.UtcNow;
+                    buffer.AppendLine(data);
                     log.Invoke(buffer.ToString());
                     buffer.Clear();
+                    _timestamp = DateTime.UtcNow;
                 }
                 else
                 {
