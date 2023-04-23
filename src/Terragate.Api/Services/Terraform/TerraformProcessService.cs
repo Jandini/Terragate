@@ -6,11 +6,13 @@ namespace Terragate.Api.Services
     public class TerraformProcessService : ITerraformProcessService
     {
         private readonly ILogger<TerraformProcessService> _logger;
-        private DateTime _timestamp; 
+        private DateTime _timestamp;
+        private int _timebuffer; 
 
-        public TerraformProcessService(ILogger<TerraformProcessService> logger)
+        public TerraformProcessService(ILogger<TerraformProcessService> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _timebuffer = configuration.GetValue("LOG_BUFFER_MS", 1000);
         }
 
 
@@ -18,7 +20,7 @@ namespace Terragate.Api.Services
         {
             if (!string.IsNullOrEmpty(data))
             {
-                if (buffer.Length > 0 && DateTime.UtcNow.Subtract(_timestamp).TotalMicroseconds > 1000)
+                if (buffer.Length > 0 && DateTime.UtcNow.Subtract(_timestamp).TotalMilliseconds > _timebuffer)
                 {
                     _timestamp = DateTime.UtcNow;
                     log.Invoke(buffer.ToString());
