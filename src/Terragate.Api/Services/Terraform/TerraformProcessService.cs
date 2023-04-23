@@ -6,12 +6,30 @@ namespace Terragate.Api.Services
     public class TerraformProcessService : ITerraformProcessService
     {
         private readonly ILogger<TerraformProcessService> _logger;
+        private DateTime _timestamp; 
 
         public TerraformProcessService(ILogger<TerraformProcessService> logger)
         {
             _logger = logger;
         }
 
+
+        private void LogData(string? data, StringBuilder buffer, Action<string> log)
+        {
+            if (!string.IsNullOrEmpty(data))
+            {
+                if (buffer.Length > 0 && DateTime.UtcNow.Subtract(_timestamp).TotalMicroseconds > 1000)
+                {
+                    _timestamp = DateTime.UtcNow;
+                    log.Invoke(buffer.ToString());
+                    buffer.Clear();
+                }
+                else
+                {
+                    buffer.AppendLine(data);
+                }
+            }
+        }
 
         public async Task StartAsync(string arguments, DirectoryInfo? workingDirectory)
         {
@@ -20,7 +38,6 @@ namespace Terragate.Api.Services
             _logger.LogDebug("Starting {terraform:l} {args:l} in {dir}", NAME, arguments, workingDirectory);
 
             using var process = new Process();
-            StringBuilder errors = new();
 
             process.StartInfo.FileName = NAME;
             process.StartInfo.Arguments = arguments;
@@ -29,20 +46,12 @@ namespace Terragate.Api.Services
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.WorkingDirectory = workingDirectory?.FullName;
 
-            process.OutputDataReceived += (sender, args) =>
-            {
-                if (!string.IsNullOrEmpty(args.Data))
-                    _logger.LogDebug(args.Data);
-            };
+            _timestamp = DateTime.UtcNow;
+            var errors = new StringBuilder();
+            var output = new StringBuilder();
 
-            process.ErrorDataReceived += (sender, args) =>
-            {
-                if (!string.IsNullOrEmpty(args.Data))
-                {
-                    _logger.LogError(args.Data);
-                    errors.AppendLine(args.Data);
-                }
-            };
+            process.OutputDataReceived += (sender, args) => LogData(args.Data, output, (lines) => _logger.LogDebug(lines));
+            process.ErrorDataReceived += (sender, args) => LogData(args.Data, errors, (lines) => _logger.LogError(lines));
 
             if (process.Start())
             {
@@ -51,6 +60,13 @@ namespace Terragate.Api.Services
                 await process.WaitForExitAsync();
                 process.CancelOutputRead();
                 process.CancelErrorRead();
+
+                if (output.Length > 0)
+                    _logger.LogDebug(output.ToString());
+
+                if (errors.Length > 0)
+                    _logger.LogError(errors.ToString());
+
 
                 _logger.LogDebug("Terraform process finished with exit code {ExitCode}", process.ExitCode);
 
