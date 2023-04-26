@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.OpenApi.Models;
 using Serilog.Sinks.Elasticsearch;
 using System.Text.RegularExpressions;
+using Serilog.Enrichers.ClassName;
 
 // Create web application builder
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +39,7 @@ var logger = new LoggerConfiguration()
     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
     .Enrich.WithProperty("ApplicationName", appName!)
     .Enrich.WithProperty("ApplicationVersion", appVersion!)
+    .Enrich.WithClassName()
     .Enrich.WithDynamicProperty("InfrastructureId", () => AppContext.GetData("InfrastructureId") as string)
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger()
