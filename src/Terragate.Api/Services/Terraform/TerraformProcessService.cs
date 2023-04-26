@@ -48,10 +48,15 @@ namespace Terragate.Api.Services
 
             _timestamp = DateTime.UtcNow;
             var errors = new StringBuilder();
-            var output = new StringBuilder();
+            var outputBuffer = new StringBuilder();
+            var errorsBuffer = new StringBuilder();
 
-            process.OutputDataReceived += (sender, args) => LogData(args.Data, output, (lines) => _logger.LogDebug(lines));
-            process.ErrorDataReceived += (sender, args) => LogData(args.Data, errors, (lines) => _logger.LogError(lines));
+            process.OutputDataReceived += (sender, args) => LogData(args.Data, outputBuffer, (lines) => _logger.LogDebug(lines));
+            process.ErrorDataReceived += (sender, args) => LogData(args.Data, errorsBuffer, (lines) => 
+            { 
+                _logger.LogError(lines); 
+                errors.AppendLine(lines); 
+            });
 
             if (process.Start())
             {
@@ -61,20 +66,34 @@ namespace Terragate.Api.Services
                 process.CancelOutputRead();
                 process.CancelErrorRead();
 
-                if (output.Length > 0)
-                    _logger.LogDebug(output.ToString());
+                if (outputBuffer.Length > 0)
+                    _logger.LogDebug(outputBuffer.ToString());
 
-                if (errors.Length > 0)
-                    _logger.LogError(errors.ToString());
+                if (errorsBuffer.Length > 0)
+                {
+                    var buffer = errorsBuffer.ToString();
+                    errors.AppendLine(buffer);
+                    _logger.LogError(buffer);
+                }
 
 
                 _logger.LogDebug("Terraform process finished with exit code {ExitCode}", process.ExitCode);
 
                 if (process.ExitCode != 0)
                 {
-                    throw errors.Length > 0
-                        ? new TerraformException(errors.ToString())
-                        : new TerraformException($"Terraform {arguments} failed with exit code {process.ExitCode}.");
+                    var message = errors.ToString();
+
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        if (message.Contains("The resource cannot be found"))
+                            throw new TerraformInfrastructureNotFoundException(message);
+                        else
+                            throw new TerraformException(message);
+                    }
+                    else
+                    {
+                        new TerraformException($"Terraform {arguments} failed with exit code {process.ExitCode}.");
+                    }
                 }
             }
             else

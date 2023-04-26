@@ -6,6 +6,7 @@ using Terragate.Api.Services;
 namespace Terragate.Api.Controllers
 {
     [ApiController]
+    [InfrastructureId]
     [Route("api/infrastructure/{id}")]
     public class InfrastructureController : ControllerBase
     {
@@ -87,12 +88,19 @@ namespace Terragate.Api.Controllers
             try
             {
                 var deployment = _repository.GetInfrastructure(id);
+                
                 await _terraform.StartAsync("init -no-color -input=false", deployment.WorkingDirectory);
                 await _terraform.StartAsync("destroy -no-color -input=false -auto-approve", deployment.WorkingDirectory);
 
                 _repository.DeleteInfrastructure(id);
                 
                 return NoContent();
+            }
+            catch (TerraformInfrastructureNotFoundException)
+            {
+                _logger.LogWarning("Deleting expired infrastructure directory");
+                _repository.DeleteInfrastructure(id);
+                return NotFound();
             }
             catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
             {
