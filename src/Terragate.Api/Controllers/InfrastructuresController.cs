@@ -51,6 +51,9 @@ namespace Terragate.Api.Controllers
                 _logger.LogInformation("Create infrastructure from {terraformFiles}", files.Select(a => a.FileName));
                 infra = await _repository.AddInfrastructure(files);
 
+                // set id for serilog dynamic enricher
+                AppContext.SetData("InfrastructureId", infra.Id);
+
                 if (_config.UseTemplates(out var templates))
                     await _repository.AddTemplates(templates, infra);
 

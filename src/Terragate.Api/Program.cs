@@ -38,6 +38,7 @@ var logger = new LoggerConfiguration()
     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
     .Enrich.WithProperty("ApplicationName", appName!)
     .Enrich.WithProperty("ApplicationVersion", appVersion!)
+    .Enrich.WithDynamicProperty("InfrastructureId", () => AppContext.GetData("InfrastructureId") as string)
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger()
     .ForContext<Program>();

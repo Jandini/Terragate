@@ -6,6 +6,7 @@ using Terragate.Api.Services;
 namespace Terragate.Api.Controllers
 {
     [ApiController]
+    [InfrastructureId]
     [Route("api/infrastructure/{id}")]
     public class InfrastructureController : ControllerBase
     {
