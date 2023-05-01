@@ -1,13 +1,34 @@
-# Configure values for VRA_USER and VRA_PASS environment variables
-$userName = Read-Host "Enter user name to be set for VRA_USER variable"
-$userPass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR((Read-Host "Enter password for $userName" -AsSecureString))))
-$userPass = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($userPass))
+$variables = "VRA_TENANT", "VRA_HOST", "VRA_USER", "VRA_PASS"
+$values = @{}
 
-if ($userName -and $userPass) {
+$variables | ForEach-Object {
+    
+    $current = [System.Environment]::GetEnvironmentVariable($_, "Machine") 
 
-    Write-Host "Configuring VRA_USER and VRA_PASS variables..."
-    [System.Environment]::SetEnvironmentVariable("VRA_USER", $userName, "Machine")
-    [System.Environment]::SetEnvironmentVariable("VRA_PASS", $userPass, "Machine")
+    if ($null -ne $current) {
+        $display = "($current)"
+    }
 
-    Write-Host "Configuration complete."
+    if ($_ -ne "VRA_PASS") {        
+        $values[$_] = (Read-Host "Enter value for $_ $display"), $current | Where-Object { $_ -ne $null -and $_ -ne '' } | Select-Object -First 1 
+    }
+    else {
+        if ([console]::CapsLock) { 
+            Write-Warning 'CAPSLOCK is ON' 
+        }
+        
+        $pass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR((Read-Host "Enter value for $_" -AsSecureString))))
+        $values[$_] = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($pass))
+    }
 }
+
+Write-Host "Configuring environment variables..."
+
+$variables | ForEach-Object {
+    [System.Environment]::SetEnvironmentVariable($_, $values[$_])
+    [System.Environment]::SetEnvironmentVariable($_, $values[$_], "Machine")
+
+    Write-Host "$_=$([System.Environment]::GetEnvironmentVariable($_, "Machine"))"
+}
+
+Write-Host "Configuration complete."
