@@ -41,19 +41,9 @@ namespace Terragate.Api.Services
         public bool UsePluginCache { get; set; } = true;
 
         /// <summary>
-        /// Copy all *.tf file from app folder to infrastructure.        
-        /// </summary>
-        public bool UseTemplates { get; set; } = true;
-
-        /// <summary>
         /// Terraform data directory
         /// </summary>
         public string DataDir { get; set; } = "data";
-
-        /// <summary>
-        /// Templates directory path
-        /// </summary>
-        public string TemplatesPath { get => Path.Combine(DataDir, "templates"); }
 
         /// <summary>
         /// Plugins cache directory path
@@ -89,14 +79,6 @@ namespace Terragate.Api.Services
         ///     "Name": "VRA_HOST",
         ///       "Value": ""
         ///     },
-        ///     {
-        ///     "Name": "DEPLOYMENT_CATALOG_NAME",
-        ///       "Value": ""
-        ///     },
-        ///     {
-        ///     "Name": "RESOURCE_COMPONENT_NAME",
-        ///       "Value": ""
-        ///     }
         /// ]        
         public TerraformVariables? Variables { get; set; }
 

@@ -12,16 +12,6 @@
 		<DebugSymbols>false</DebugSymbols>
 	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Templates\vra7_provider_3.0.2.tf" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Templates\vra7_provider_3.0.2.tf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
 			<PrivateAssets>all</PrivateAssets>
