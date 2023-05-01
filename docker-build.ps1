@@ -1,12 +1,7 @@
-# Docker image name
-$ImageName = "jandini/terragate"
-# Docker image tag from gitversion or 1.0.0 
-$ImageTag = $(dotnet gitversion /showvariable SemVer); if (!$ImageName) { $ImageName = "1.0.0" }
-
-
-# Publish solution in src directory as non self contained, linux-x64 runtime for docker container
-dotnet publish -nologo --configuration Release --runtime linux-x64 --no-self-contained src
-# Suppress message `Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them`
-$env:DOCKER_SCAN_SUGGEST="false"
+$version = "$(dotnet gitversion /showvariable SemVer)", "1.0.0" | Select-Object -First 1
+Write-Host "Building jandini/terragate:$version..."
 # Build docker image 
-docker build -t ${ImageName}:${ImageTag} .
+wsl docker build --build-arg VRA_HOST=$env:VRA_HOST --build-arg VRA_TENANT=$env:VRA_TENANT --build-arg VRA_USER=$env:VRA_USER --build-arg VRA_PASS=$env:VRA_PASS -t jandini/terragate:${version} .
+# Inspect docker image 
+wsl docker image inspect jandini/terragate:${version}
+
