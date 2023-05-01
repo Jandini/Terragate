@@ -33,29 +33,6 @@
 
             if (terra != null)
             {
-                if (terra.Variables != null)
-                {
-                    foreach (var variable in terra.Variables)
-                    {
-                        var value = variable.GetValue();
-
-                        if (!string.IsNullOrEmpty(value))
-                        {
-                            var name = $"TF_VAR_{variable.Name}";
-
-                            if (Environment.GetEnvironmentVariable(name) == null)
-                            {
-                                logger.Debug("Adding {variableName:l} from configuration", name);
-                                Environment.SetEnvironmentVariable(name, value);
-                            }
-                            else
-                            {
-                                logger.Debug("Using {variableName:l} provided to the environment", name);
-                            }
-                        }
-                    }
-                }
-
                 if (terra.UsePluginCache)
                 {
                     var dir = new DirectoryInfo(terra.PluginsPath);
