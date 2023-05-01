@@ -167,7 +167,7 @@ namespace Terragate.Api.Services
                     throw new Exception($"Download failed with status {response.StatusCode}");
 
                 var fileContents = await response.Content.ReadAsByteArrayAsync();
-                var fileName = Path.GetFileName(url);
+                var fileName = $"{Guid.NewGuid()}.tf";
 
                 return new FormFile(new MemoryStream(fileContents), 0, fileContents.Length, fileName, fileName);
             }
