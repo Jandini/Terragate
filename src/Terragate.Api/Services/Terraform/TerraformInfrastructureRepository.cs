@@ -128,18 +128,6 @@ namespace Terragate.Api.Services
         }
 
 
-        public async Task AddTemplates(DirectoryInfo templates, ITerraformInfrastructure infra)
-        {
-            foreach (var file in templates.GetFiles())
-            {
-                _logger.LogWarning("Adding template {file}", file.Name);
-
-                using var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 8192, FileOptions.Asynchronous | FileOptions.SequentialScan);
-                using var target = new FileStream(Path.Combine(infra.WorkingDirectory.FullName, file.Name), FileMode.CreateNew, FileAccess.Write, FileShare.None, 8192, FileOptions.Asynchronous | FileOptions.SequentialScan);
-                await source.CopyToAsync(target);
-            }
-        }
-
         public async Task<ITerraformInfrastructure> AddInfrastructure(IFormFile[] terraformFiles)
         {
             var id = Guid.NewGuid();

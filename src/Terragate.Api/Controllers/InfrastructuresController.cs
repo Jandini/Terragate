@@ -54,9 +54,6 @@ namespace Terragate.Api.Controllers
                 // set id for serilog dynamic enricher
                 AppContext.SetData("InfrastructureId", infra.Id);
 
-                if (_config.UseTemplates(out var templates))
-                    await _repository.AddTemplates(templates, infra);
-
                 // add variables to command line if provided
                 var values = (variables?.Split(';').Where(a => a.Trim() != string.Empty))?.ToArray() ?? Array.Empty<string>();
                 var vars = values.Length > 0 ? " -var " + string.Join(" -var ", values) : string.Empty;

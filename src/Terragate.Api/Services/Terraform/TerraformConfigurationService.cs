@@ -12,12 +12,7 @@
             _config = config;
             _terra = GetTerraformConfig();
         }
-
-
-        public DirectoryInfo GetTemplatesDir()
-        {
-            return new DirectoryInfo(_terra.TemplatesPath);
-        }
+     
 
         public TerraformConfiguration GetTerraformConfig()
         {
@@ -30,24 +25,6 @@
             }
 
             return config;
-        }
-
-        public bool UseTemplates(out DirectoryInfo templates)
-        {
-            templates = GetTemplatesDir();
-
-            if (!_terra.UseTemplates)
-                return false;
-
-            if (templates.Exists)
-            {
-                return true;
-            }
-            else
-            {
-                _logger.LogWarning("Configuration indicates use of templates but the templates directory {dir} does not exist.", templates.FullName);
-                return false;
-            }
         }
     }
 }
