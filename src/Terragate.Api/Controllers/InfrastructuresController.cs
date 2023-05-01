@@ -39,7 +39,7 @@ namespace Terragate.Api.Controllers
         }
 
 
-        [HttpPost(Name = "CreateInfrastructure")]
+        [HttpPost("files", Name = "CreateInfrastructureFromFiles")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(IFormFile[] files, string? variables)
@@ -48,7 +48,7 @@ namespace Terragate.Api.Controllers
 
             try
             {
-                _logger.LogInformation("Create infrastructure from {terraformFiles}", files.Select(a => a.FileName));
+                _logger.LogInformation($"Creating infrastructure from {files.Select(a => a.FileName)}");
                 infra = await _repository.AddInfrastructure(files);
 
                 // set id for serilog dynamic enricher
@@ -60,12 +60,12 @@ namespace Terragate.Api.Controllers
 
                 await _terraform.StartAsync("init -no-color -input=false" + vars, infra.WorkingDirectory);
                 await _terraform.StartAsync("apply -no-color -auto-approve -input=false" + vars, infra.WorkingDirectory);
-                
+
                 infra = _repository.GetInfrastructure(infra.Id);
 
-                if (!infra.Resources.Any())                                    
+                if (!infra.Resources.Any())
                     throw new TerraformException("Terraform completed successfully but no resourcre waw created.");
-                
+
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
             }
             catch (Exception)
@@ -74,7 +74,15 @@ namespace Terragate.Api.Controllers
                     _repository.DeleteInfrastructure(infra.Id);
 
                 throw;
-            }            
+            }
+        }   
+
+        [HttpPost("url", Name = "CreateInfrastructureFromUrl")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Post(string url, string? variables)
+        {
+            return await Post(new IFormFile[] { await _repository.DownloadFile(url) }, variables);
         }
     }
 }
