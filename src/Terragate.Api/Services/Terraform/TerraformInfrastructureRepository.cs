@@ -152,5 +152,29 @@ namespace Terragate.Api.Services
             var dir = GetInfrastructureDir(id);
             dir.Delete(true);
         }
+
+
+        public async Task<IFormFile> DownloadFile(string url)
+        {
+            _logger.LogDebug($"Downloading from {url}");
+
+            try
+            {
+                using var httpClient = new HttpClient();
+                var response = await httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception($"Download failed with status {response.StatusCode}");
+
+                var fileContents = await response.Content.ReadAsByteArrayAsync();
+                var fileName = Path.GetFileName(url);
+
+                return new FormFile(new MemoryStream(fileContents), 0, fileContents.Length, fileName, fileName);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to download file from {url}. Error: {ex.Message}", ex);
+            }
+        }
     }
 }

@@ -6,5 +6,6 @@
         ITerraformInfrastructure GetInfrastructure(Guid id);
         void DeleteInfrastructure(Guid id);
         Task<ITerraformInfrastructure> AddInfrastructure(IFormFile[] terraformFiles);
+        Task<IFormFile> DownloadFile(string url);
     }
 }
