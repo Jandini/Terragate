@@ -42,7 +42,7 @@ namespace Terragate.Api.Controllers
         [HttpPost(Name = "CreateInfrastructure")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Post(IFormFile[] files)
+        public async Task<IActionResult> Post(IFormFile[] files, string? variables)
         {
             ITerraformInfrastructure? infra = null;
 
@@ -57,8 +57,12 @@ namespace Terragate.Api.Controllers
                 if (_config.UseTemplates(out var templates))
                     await _repository.AddTemplates(templates, infra);
 
-                await _terraform.StartAsync("init -no-color -input=false", infra.WorkingDirectory);
-                await _terraform.StartAsync("apply -no-color -auto-approve -input=false", infra.WorkingDirectory);
+                // add variables to command line if provided
+                var values = (variables?.Split(';').Where(a => a.Trim() != string.Empty))?.ToArray() ?? Array.Empty<string>();
+                var vars = values.Length > 0 ? " -var " + string.Join(" -var ", values) : string.Empty;
+
+                await _terraform.StartAsync("init -no-color -input=false" + vars, infra.WorkingDirectory);
+                await _terraform.StartAsync("apply -no-color -auto-approve -input=false" + vars, infra.WorkingDirectory);
                 
                 infra = _repository.GetInfrastructure(infra.Id);
 
