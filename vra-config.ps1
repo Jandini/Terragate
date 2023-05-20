@@ -18,7 +18,7 @@ $variables | ForEach-Object {
         }
         
         $pass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR((Read-Host "Enter value for $_" -AsSecureString))))
-        $values[$_] = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($pass))
+        $values[$_] = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($pass))
     }
 }
 
