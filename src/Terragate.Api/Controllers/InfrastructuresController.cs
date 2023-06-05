@@ -51,8 +51,8 @@ namespace Terragate.Api.Controllers
                 _logger.LogInformation($"Creating infrastructure from {files.Select(a => a.FileName)}");
                 infra = await _repository.AddInfrastructure(files);
 
-                // set id for serilog dynamic enricher
-                AppContext.SetData("InfrastructureId", infra.Id);
+                // set id as string for serilog dynamic enricher
+                AppContext.SetData("InfrastructureId", infra.Id.ToString());
 
                 // add variables to command line if provided
                 var values = (variables?.Split(';').Where(a => a.Trim() != string.Empty))?.ToArray() ?? Array.Empty<string>();
