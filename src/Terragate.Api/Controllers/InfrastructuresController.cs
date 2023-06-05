@@ -72,7 +72,10 @@ namespace Terragate.Api.Controllers
                     var resources = infra.Resources.SelectMany(a => a.Instances.Where(i => i.Status != "On"));
 
                     foreach (var resource in resources)
-                        _logger.LogDebug($"Waiting for {resource.HostName} ({resource.Status})");
+                    {
+                        _logger.LogDebug($"Waiting for {resource.HostName} with status {resource.Status}...");
+                        await Task.Delay(1000);
+                    }
 
                     await _terraform.StartAsync("refresh -no-color -input=false", infra.WorkingDirectory);
                     infra = _repository.GetInfrastructure(infra.Id);
