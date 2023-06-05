@@ -66,6 +66,24 @@ namespace Terragate.Api.Controllers
                 if (!infra.Resources.Any())
                     throw new TerraformException("Terraform completed successfully but no resourcre waw created.");
 
+
+                int retry = 0;
+                while (infra.Resources.Any(a => a.Instances.Where(i => i.Status != "On").Any())) {
+                    var resources = infra.Resources.SelectMany(a => a.Instances.Where(i => i.Status != "On"));
+
+                    foreach (var resource in resources)
+                        _logger.LogDebug($"Waiting for {resource.HostName} ({resource.Status})");
+
+                    await _terraform.StartAsync("refresh -no-color -input=false", infra.WorkingDirectory);
+                    infra = _repository.GetInfrastructure(infra.Id);
+
+                    if (++retry > 10)
+                    {
+                        _logger.LogWarning("Some of the resources are not ready", resources);
+                        break;
+                    }
+                }
+
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
             }
             catch (Exception)
