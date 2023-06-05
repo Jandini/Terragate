@@ -13,16 +13,14 @@ namespace Terragate.Api.Controllers
         private readonly IMapper _mapper;
         private readonly ITerraformProcessService _terraform;
         private readonly ITerraformInfrastructureRepository _repository;
-        private readonly ITerraformConfigurationService _config;
 
 
-        public InfrastructuresController(ILogger<InfrastructuresController> logger, IMapper mapper, ITerraformProcessService terraform, ITerraformInfrastructureRepository repository, ITerraformConfigurationService config)
+        public InfrastructuresController(ILogger<InfrastructuresController> logger, IMapper mapper, ITerraformProcessService terraform, ITerraformInfrastructureRepository repository)
         {
             _logger = logger;
             _mapper = mapper;
             _terraform = terraform;
-            _repository = repository;
-            _config = config;
+            _repository = repository;            
         }
 
         [HttpGet(Name = "GetInfrastructures")]
@@ -67,6 +65,8 @@ namespace Terragate.Api.Controllers
                     throw new TerraformException("Terraform completed successfully but no resourcre waw created.");
 
 
+                // It is possible that VM is still 'TurningOn'.
+                // Make sure all the resources are in 'On' status before give away the infrastructure.
                 int retry = 0;
                 while (infra.Resources.Any(a => a.Instances.Where(i => i.Status != "On").Any())) {
                     var resources = infra.Resources.SelectMany(a => a.Instances.Where(i => i.Status != "On"));
@@ -81,10 +81,7 @@ namespace Terragate.Api.Controllers
                     infra = _repository.GetInfrastructure(infra.Id);
 
                     if (++retry > 10)
-                    {
-                        _logger.LogWarning("Some of the resources are not ready", resources);
-                        break;
-                    }
+                        throw new TerraformException("Resources are not ready.");
                 }
 
                 return Ok(_mapper.Map<InfrastructureDto>(infra));
