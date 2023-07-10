@@ -21,11 +21,11 @@ RUN unzip /tmp/terraform_1.3.7_linux_amd64.zip -d /usr/bin && \
 COPY src/Terragate.Api/bin/Release/net7.0/linux-x64/publish .
 
 # Get configuration from environment variables via --build-arg
-ARG VRA_USER
-ARG VRA_TENANT
-ARG VRA_HOST
-ENV TF_VRA_HOST=$VRA_HOST
-ENV TF_VRA_USER=$VRA_USER
-ENV TF_VRA_TENANT=$VRA_TENANT
+# ARG VRA_USER
+# ARG VRA_TENANT
+# ARG VRA_HOST
+# ENV TF_VAR_VRA_HOST=$VRA_HOST
+# ENV TF_VAR_VRA_USER=$VRA_USER
+# ENV TF_VAR_VRA_TENANT=$VRA_TENANT
 
 ENTRYPOINT ["dotnet", "Terragate.Api.dll"]
